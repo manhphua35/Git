@@ -1,0 +1,27 @@
+<form method="post" action="/account/loginto">
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Password">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+
+  <!-- Thêm trường ẩn để chứa giá trị của cookie "userId" -->
+  <input type="hidden" id="userId" name="userId">
+</form>
+
+<script>
+  // Kiểm tra xem cookie "userId" đã được thiết lập chưa
+  const userId = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("userId="))
+    .split("=")[1];
+
+  // Nếu cookie "userId" đã được thiết lập, đặt giá trị vào trường ẩn
+  if (userId) {
+    document.getElementById('userId').value = userId;
+  }
+</script>

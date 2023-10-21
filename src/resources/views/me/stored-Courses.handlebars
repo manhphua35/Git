@@ -1,0 +1,39 @@
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col" colspan="2">STT</th>
+            <th scope="col">Loại hoạt động</th>
+            <th scope="col">Số tiền</th>
+            <th scope="col">Ghi chú</th>
+            <th scope="col">Thời gian tạo</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each courses}}
+        <tr>
+            <td>
+                <!-- Checkbox and ID -->
+            </td>
+            <th scope="row">{{@index}}</th>
+            <td>{{this.action}}</td>
+            <td>{{this.prices}}</td>
+            <td>{{this.note}}</td>
+            <td>{{this.createAt}}</td>
+            <td>
+                <a href="/courses/{{this._id}}/edit" class="btn btn-light" data-id="{{this._id}}">Sửa</a>
+                <a href="#" class="btn btn-light" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-modal">Xoá</a>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="5" class="text-center">Bạn chưa có khoản chi tiêu nào
+                <a href="/courses/create">Thêm khoản chi tiêu</a>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<!-- Modal and delete form as before -->

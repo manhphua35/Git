@@ -1,0 +1,82 @@
+<!-- Đoạn mã HTML -->
+<div class="mt-4">
+    <h3>Thêm khoản chi tiêu</h3>
+    <form id="expenseForm" method="post" action="/courses/store">
+        <div class="form-group">
+            <label for="action">Chọn hành động</label>
+            <select class="form-control" id="action" name="action">
+                <option value="">--Chọn hành động--</option>
+                <option value="Ăn uống">Ăn uống</option>
+                <option value="Mua sắm">Mua sắm</option>
+                <option value="Nhà ở">Nhà ở</option>
+                <option value="Đi lại">Đi lại</option>
+                <option value="Sức khoẻ">Sức khoẻ</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="prices">Nhập số tiền</label>
+            <input type="number" class="form-control" id="prices" name="prices">
+        </div>
+        <div class="form-group">
+            <label for="note">Nhập ghi chú</label>
+            <input type="text" class="form-control" id="note" name="note">
+        </div>
+        <!-- Thêm trường ẩn để chứa giá trị của cookie "userId" -->
+        <input type="hidden" id="userId" name="userId">
+        <button type="submit" class="btn btn-primary">Thêm vào danh sách</button>
+    </form>
+</div>
+
+<script>
+    function getUserIdFromCookie() {
+        // Giải mã giá trị cookie từ URL-encoded
+        const decodedCookie = decodeURIComponent(document.cookie);
+        // Tìm vị trí của chuỗi 'userId=' trong cookie
+        const startIndex = decodedCookie.indexOf('userId=j:"');
+        // Nếu tìm thấy chuỗi 'userId=' trong cookie
+        if (startIndex !== -1) {
+            // Tính vị trí bắt đầu của giá trị user ID
+            const userIdStartIndex = startIndex + 'userId=j:"'.length;
+            // Tìm vị trí kết thúc của giá trị user ID
+            const userIdEndIndex = decodedCookie.indexOf('"', userIdStartIndex);
+            // Lấy giá trị user ID từ cookie và loại bỏ dấu '"' ở cả hai bên
+            const userId = decodedCookie.substring(userIdStartIndex, userIdEndIndex).replace(/"/g, '');
+            console.log(userId);
+            return userId;
+        }
+        return null; // Trả về null nếu không tìm thấy chuỗi 'userId=' trong cookie
+    }
+    // Sử dụng hàm để trích xuất userID từ cookie và in ra console
+    const userId = getUserIdFromCookie();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý sự kiện khi form được submit
+        document.getElementById('expenseForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const action = document.getElementById('action').value;
+        const prices = document.getElementById('prices').value;
+        const note = document.getElementById('note').value;
+        // Tạo chuỗi query parameters
+        const queryParams = `userId=${userId}&action=${encodeURIComponent(action)}&prices=${prices}&note=${encodeURIComponent(note)}`;
+        // Sử dụng fetch để gửi yêu cầu POST với dữ liệu dưới dạng x-www-form-urlencoded
+        fetch('/courses/store', {
+            method: 'POST',
+            headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: queryParams
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                });
+            });
+    });
+
+
+
+
+</script>
