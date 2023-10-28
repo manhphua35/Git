@@ -7,7 +7,6 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-
 app.use(cookieParser());
 
 class AccountController {
@@ -20,6 +19,7 @@ class AccountController {
     }
     stored(req, res, next){
         const formData = req.body;
+        var name = formData.name;
         var username = formData.username;
         var password = formData.password;
         Account.findOne({ 
@@ -33,7 +33,7 @@ class AccountController {
                 const formData = req.body;
                 const account = new Account(formData);
                 account.save();
-                res.json('Bạn đã tạo tài khoản thành công ');
+                res.status(200).json({ success: true, message: 'Đăng ký thành công'});
             }
         })}
     async loginto(req, res, next) {
@@ -55,12 +55,12 @@ class AccountController {
             res.cookie('userId', account._id, {
                 httpOnly: false,
                 maxAge: 24 * 60 * 60 * 1000,
+                
             });
-        
-            const userInfo = { id: account._id, username: account.username };
-            res.json({ message: 'Đăng nhập thành công', userInfo });
             
-            // Log cookie
+            const userInfo = { id: account._id, username: account.username };
+            res.status(200).json({ success: true, message: 'Đăng nhập thành công', accessToken });
+            
         } catch (error) {
             console.error(error);
             res.status(500).json('Có lỗi bên server');
@@ -69,10 +69,9 @@ class AccountController {
         
     async logout(req, res) {
         try {
-            // Xóa cookie userId
+            
             res.clearCookie('userId');
-    
-            res.json({ message: 'Đăng xuất thành công' });
+            res.redirect('/account/login');
         } catch (error) {
             console.error(error);
             res.status(500).json('Có lỗi bên server');

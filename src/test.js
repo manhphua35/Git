@@ -7,12 +7,15 @@ const { create } = require('express-handlebars');
 const AccountModel = require('./app/models/Account');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const localStorage = require('node-localstorage');
+const cors = require('cors');
 
 
 
 const app = express();
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 
 

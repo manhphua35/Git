@@ -20,10 +20,10 @@
             <td>{{this.action}}</td>
             <td>{{this.prices}}</td>
             <td>{{this.note}}</td>
-            <td>{{this.createAt}}</td>
+            <td>{{this.createdAt}}</td>
             <td>
                 <a href="/courses/{{this._id}}/edit" class="btn btn-light" data-id="{{this._id}}">Sửa</a>
-                <a href="#" class="btn btn-light" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-modal">Xoá</a>
+                <a href="#" class="btn btn-light" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-course-modal">Xoá</a>
             </td>
         </tr>
         {{else}}
@@ -37,3 +37,49 @@
 </table>
 
 <!-- Modal and delete form as before -->
+
+
+<div id="delete-course-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xác nhận</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Thao tác này sẽ xoá vĩnh viễn hoạt động</p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-delete-course" type="button" class="btn btn-danger">Xoá</button>
+        <button  type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<form name="delete-form" method="post"></form>
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var courseId;
+    var deleleForm = document.forms['delete-form'];
+    var btnDeletecourse = document.getElementById('btn-delete-course');
+    $('#delete-course-modal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) ;
+      courseId = button.data('id') ;
+    });
+  
+  btnDeletecourse.onclick = function(){
+      deleleForm.action = '/courses/' + courseId + '?_method=DELETE';
+      deleleForm.submit();
+  }
+});
+  
+</script>

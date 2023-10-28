@@ -29,35 +29,28 @@
 
 <script>
     function getUserIdFromCookie() {
-        // Giải mã giá trị cookie từ URL-encoded
         const decodedCookie = decodeURIComponent(document.cookie);
-        // Tìm vị trí của chuỗi 'userId=' trong cookie
         const startIndex = decodedCookie.indexOf('userId=j:"');
-        // Nếu tìm thấy chuỗi 'userId=' trong cookie
         if (startIndex !== -1) {
-            // Tính vị trí bắt đầu của giá trị user ID
+            
             const userIdStartIndex = startIndex + 'userId=j:"'.length;
-            // Tìm vị trí kết thúc của giá trị user ID
+            
             const userIdEndIndex = decodedCookie.indexOf('"', userIdStartIndex);
-            // Lấy giá trị user ID từ cookie và loại bỏ dấu '"' ở cả hai bên
+            
             const userId = decodedCookie.substring(userIdStartIndex, userIdEndIndex).replace(/"/g, '');
             console.log(userId);
             return userId;
         }
-        return null; // Trả về null nếu không tìm thấy chuỗi 'userId=' trong cookie
+        return null; 
     }
-    // Sử dụng hàm để trích xuất userID từ cookie và in ra console
     const userId = getUserIdFromCookie();
     document.addEventListener('DOMContentLoaded', function() {
-        // Xử lý sự kiện khi form được submit
         document.getElementById('expenseForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const action = document.getElementById('action').value;
         const prices = document.getElementById('prices').value;
         const note = document.getElementById('note').value;
-        // Tạo chuỗi query parameters
         const queryParams = `userId=${userId}&action=${encodeURIComponent(action)}&prices=${prices}&note=${encodeURIComponent(note)}`;
-        // Sử dụng fetch để gửi yêu cầu POST với dữ liệu dưới dạng x-www-form-urlencoded
         fetch('/courses/store', {
             method: 'POST',
             headers: {
@@ -66,17 +59,23 @@
                     body: queryParams
             })
             .then(response => response.json())
-            .then(data => {
-
-                console.log(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                });
+            
+             .then(data => {
+            
+            if (data.success) {
+                
+                window.location.href = '/me/stored/courses';
+            } else {
+                
+                console.error('Lỗi khi lưu dữ liệu.');
+            }
+        })
             });
+        
     });
 
 
+   
 
 
 </script>

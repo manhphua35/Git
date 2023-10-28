@@ -1,27 +1,60 @@
-<form method="post" action="/account/loginto">
+<form   id="loginForm">
   <div class="form-group">
     <label for="username">Username</label>
     <input type="text" class="form-control" id="username" name="username" placeholder="Username">
   </div>
   <div class="form-group">
     <label for="exampleInputPassword1">Password</label>
-    <input type="password" class="form-control" id="exampleInputPassword1" name="password" placeholder="Password">
+    <input type="password" class="form-control" id="password" name="password" placeholder="Password">
   </div>
+  <tr>
+    <td class="text-center">Bạn chưa có tài khoản
+    <a href="/account/register">Đăng ký tài khoản</a>
+    </td>
+  </tr>
+  <br>
+  <div id="error-message" class="alert alert-danger" style="display: none;"></div>
   <button type="submit" class="btn btn-primary">Submit</button>
 
-  <!-- Thêm trường ẩn để chứa giá trị của cookie "userId" -->
-  <input type="hidden" id="userId" name="userId">
-</form>
+  
 
 <script>
-  // Kiểm tra xem cookie "userId" đã được thiết lập chưa
-  const userId = document.cookie
-    .split("; ")
-    .find(row => row.startsWith("userId="))
-    .split("=")[1];
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
 
-  // Nếu cookie "userId" đã được thiết lập, đặt giá trị vào trường ẩn
-  if (userId) {
-    document.getElementById('userId').value = userId;
-  }
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        fetch('/account/loginto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString(),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+
+                
+                window.location.href = '/me/stored/courses';
+            } else {
+                const errorMessageElement = document.getElementById('error-message');
+                errorMessageElement.textContent = 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản và mật khẩu.';
+                errorMessageElement.style.display = 'block'; 
+                console.error('Đăng nhập không thành công.');
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi kết nối hoặc lỗi từ server:', error);
+        });
+    });
+});
+
 </script>

@@ -3,9 +3,10 @@ const Schema = mongoose.Schema;
 
 const AccountSchema = new Schema(
   {
+    name : { type: String, required: true},
     username: { type: String, required: true },
     password: { type: String, required: true },
-    courses: [{ type: Schema.Types.ObjectId, ref: 'courses' }], // Sử dụng ref để chỉ định liên kết đến model Course
+    courses: [{ type: Schema.Types.ObjectId, ref: 'courses' }], 
   },
   {
     timestamps: true,

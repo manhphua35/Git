@@ -12,7 +12,7 @@ const CourseSchema = new Schema(
     user: { type: Schema.Types.String, ref: 'Account' }, 
   },
   {
-    timestamps: true // Đặt timestamps thành true trong cấu hình tùy chọn
+    timestamps: true 
   }
 );
 
