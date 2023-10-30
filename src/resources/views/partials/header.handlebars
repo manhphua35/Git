@@ -1,24 +1,49 @@
+
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container">
-        <a class="navbar-brand" href="/home">QLTC online</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="/" role="button" data-toggle="dropdown" aria-expanded="false">
-            <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/46/e4/de/46e4de47-6db9-0094-3d4f-aaedcd261e0a/appIcon-0-1x_U007emarketing-0-7-0-85-220.png/1200x630wa.png" alt="" class="user-avatar"> Mạnh Phú
-            </a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="/courses/create"> Thêm hoạt động</a>
-              <a class="dropdown-item" href="/me/stored/courses">Hoạt động của tôi</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/account/logout">Đăng xuất</a>
-            </div>
-          </li>
-        </ul>
-      </div>
+    <a class="navbar-brand" href="/home">QLTC online</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      </ul>
+    </div>
+    <div id="loginText" class="login" style="display: none;">
+      <a href="/account/login">Đăng nhập</a>
+    </div>
+    <ul class="navbar-nav ml-auto" id="userActions" style="display: none;">
   </div>
 </nav>
+
+<script>
+  var isLoggedIn = false; 
+  const username = localStorage.getItem('username');
+  var loginText = document.getElementById('loginText');
+  var userActions = document.getElementById('userActions');
+  if(username != null){
+    var isLoggedIn = true;
+  }
+  if (isLoggedIn) {
+    name = localStorage.getItem('name');
+    userActions.innerHTML = `
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/" role="button" data-toggle="dropdown" aria-expanded="false">
+            <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/46/e4/de/46e4de47-6db9-0094-3d4f-aaedcd261e0a/appIcon-0-1x_U007emarketing-0-7-0-85-220.png/1200x630wa.png" alt="" class="user-avatar"> ${name}
+          </a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/courses/create"> Thêm hoạt động</a>
+            <a class="dropdown-item" href="/me/stored/courses">Hoạt động của tôi</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="/account/logout" id = "logout">Đăng xuất</a>
+          </div>
+        </li>
+        `;
+      userActions.style.display = 'block'; 
+      logout = document.getElementById('logout');
+      logout.onclick = function(){
+        localStorage.removeItem('username');
+      }
+  }else {
+    loginText.style.display = 'block'; 
+  }
+</script>

@@ -1,4 +1,5 @@
-
+<div>
+  <h3 class="text-center">Hoạt động đã lưu</h3>
 <table class="table">
     <thead>
         <tr>
@@ -16,11 +17,11 @@
             <td>
                 <!-- Checkbox and ID -->
             </td>
-            <th scope="row">{{@index}}</th>
+            <th scope="row">{{@index}} </th>
             <td>{{this.action}}</td>
             <td>{{this.prices}}</td>
             <td>{{this.note}}</td>
-            <td>{{this.createdAt}}</td>
+            <td class="formatted-date">{{this.createdAt}}</td>
             <td>
                 <a href="/courses/{{this._id}}/edit" class="btn btn-light" data-id="{{this._id}}">Sửa</a>
                 <a href="#" class="btn btn-light" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-course-modal">Xoá</a>
@@ -35,8 +36,7 @@
         {{/each}}
     </tbody>
 </table>
-
-<!-- Modal and delete form as before -->
+</div>
 
 
 <div id="delete-course-modal" class="modal" tabindex="-1" role="dialog">
@@ -65,8 +65,21 @@
 
 
 
-
 <script>
+  const formattedDates = document.querySelectorAll('.formatted-date');
+  formattedDates.forEach(element => {
+      const originalDate = element.textContent;
+      const formattedDate = new Date(originalDate).toLocaleString('en-US', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+      });
+      element.textContent = formattedDate;
+  });  
   document.addEventListener('DOMContentLoaded', function(){
     var courseId;
     var deleleForm = document.forms['delete-form'];
@@ -74,12 +87,10 @@
     $('#delete-course-modal').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget) ;
       courseId = button.data('id') ;
-    });
-  
-  btnDeletecourse.onclick = function(){
-      deleleForm.action = '/courses/' + courseId + '?_method=DELETE';
-      deleleForm.submit();
-  }
-});
-  
-</script>
+    }); 
+    btnDeletecourse.onclick = function(){
+        deleleForm.action = '/courses/' + courseId + '?_method=DELETE';
+        deleleForm.submit();
+    }
+  });
+  </script>

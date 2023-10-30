@@ -25,7 +25,7 @@
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        
+        localStorage.setItem('username', username);
 
         const formData = new URLSearchParams();
         formData.append('username', username);
@@ -41,9 +41,10 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-
-                
-                window.location.href = '/me/stored/courses';
+              const userInfo = data.userInfo;
+              const name = userInfo.name;
+              localStorage.setItem('name', name);
+              window.location.href = '/me/stored/courses';
             } else {
                 const errorMessageElement = document.getElementById('error-message');
                 errorMessageElement.textContent = 'Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản và mật khẩu.';

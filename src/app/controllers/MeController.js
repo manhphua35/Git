@@ -12,7 +12,12 @@ const { multipleMongooseToObject } = require('../../util/mongoose');
 
 class MeController {
     async  storedCourses(req, res) {
+        let s = [];
         const userId = req.cookies.userId;
+        function formatDate(date) {
+            var options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            return date.toLocaleDateString(undefined, options);
+          }
         if (userId==undefined){
             res.redirect('/account/login');
         }else{
@@ -24,7 +29,8 @@ class MeController {
                 const courses = await Course.find({
                     _id: { $in: courseIDs }
                 });
-
+                
+                
                 res.render('me/stored-Courses', {
                     courses: multipleMongooseToObject(courses)
                 });
@@ -34,15 +40,7 @@ class MeController {
             }
         }
     }
-    async trashCourses(req, res, next) {
-        try {
-            const deletedCourses = await Course.findDeleted({});
-            res.render('me/trash-Courses', { courses: multipleMongooseToObject(deletedCourses) });
-        } catch (error) {
-            console.error('Error:', error);
-            res.status(500).send('Internal Server Error');
-        }
-    }
+
 }
 
 module.exports = new MeController();

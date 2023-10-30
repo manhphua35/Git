@@ -58,8 +58,9 @@ class AccountController {
                 
             });
             
-            const userInfo = { id: account._id, username: account.username };
-            res.status(200).json({ success: true, message: 'Đăng nhập thành công', accessToken });
+            const userInfo = { name : account.name,id: account._id, username: account.username };
+            //console.log(userInfo);
+            res.status(200).json({ success: true, message: 'Đăng nhập thành công', accessToken,userInfo });
             
         } catch (error) {
             console.error(error);
@@ -69,9 +70,9 @@ class AccountController {
         
     async logout(req, res) {
         try {
-            
             res.clearCookie('userId');
-            res.redirect('/account/login');
+            res.status(200).json({ success: true, message: 'Đăng xuất thành công' });
+            
         } catch (error) {
             console.error(error);
             res.status(500).json('Có lỗi bên server');
