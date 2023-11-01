@@ -12,12 +12,7 @@ const { multipleMongooseToObject } = require('../../util/mongoose');
 
 class MeController {
     async  storedCourses(req, res) {
-        let s = [];
         const userId = req.cookies.userId;
-        function formatDate(date) {
-            var options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            return date.toLocaleDateString(undefined, options);
-          }
         if (userId==undefined){
             res.redirect('/account/login');
         }else{
