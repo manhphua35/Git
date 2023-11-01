@@ -1,4 +1,3 @@
-
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container">
     <a class="navbar-brand" href="/home">QLTC online</a>
@@ -6,44 +5,66 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      </ul>
     </div>
-    <div id="loginText" class="login" style="display: none;">
-      <a href="/account/login">Đăng nhập</a>
+    <div id="userActions" class="navbar-nav ml-auto">
+      <div id="loginText" style="display: none;">
+        <a class="nav-link" href="/account/login">Đăng nhập</a>
+      </div>
+      <div id="userMenu" style="display: none;">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="/" role="button" data-toggle="dropdown" aria-expanded="false" id="userDropdown">
+            <img src="" alt="" class="user-avatar"> <span id="userName"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="userDropdown">
+            <a class="dropdown-item" href="/courses/create"> Thêm hoạt động</a>
+            <a class="dropdown-item" href="/me/stored/courses">Hoạt động của tôi</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" id="logout">Đăng xuất</a>
+          </div>
+        </li>
+      </div>
     </div>
-    <ul class="navbar-nav ml-auto" id="userActions" style="display: none;">
   </div>
 </nav>
 
 <script>
-  var isLoggedIn = false; 
-  const username = localStorage.getItem('username');
+  var username = localStorage.getItem('username');
+  var userMenu = document.getElementById('userMenu');
   var loginText = document.getElementById('loginText');
-  var userActions = document.getElementById('userActions');
-  if(username != null){
-    var isLoggedIn = true;
-  }
-  if (isLoggedIn) {
-    name = localStorage.getItem('name');
-    userActions.innerHTML = `
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="/" role="button" data-toggle="dropdown" aria-expanded="false">
-            <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/46/e4/de/46e4de47-6db9-0094-3d4f-aaedcd261e0a/appIcon-0-1x_U007emarketing-0-7-0-85-220.png/1200x630wa.png" alt="" class="user-avatar"> ${name}
-          </a>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="/courses/create"> Thêm hoạt động</a>
-            <a class="dropdown-item" href="/me/stored/courses">Hoạt động của tôi</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="/account/logout" id = "logout">Đăng xuất</a>
-          </div>
-        </li>
-        `;
-      userActions.style.display = 'block'; 
-      logout = document.getElementById('logout');
-      logout.onclick = function(){
-        localStorage.removeItem('username');
-      }
-  }else {
-    loginText.style.display = 'block'; 
+  
+  if (username) {
+    var name = localStorage.getItem('name');
+    var userDropdown = document.getElementById('userDropdown');
+    var userName = document.getElementById('userName');
+    var logout = document.getElementById('logout');
+    
+    userName.textContent = name;
+    userMenu.style.display = 'block';
+    logout.onclick = function() {
+      fetch('/account/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ logout: true }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.removeItem('username');
+          localStorage.removeItem('name');
+          userMenu.style.display = 'none';
+          loginText.style.display = 'block';
+          window.location.href ='/account/login';
+        } else {
+          console.error('Đăng xuất không thành công.');
+        }
+      })
+      .catch(error => {
+        console.error('Lỗi kết nối hoặc lỗi từ server:', error);
+      });
+    };
+  } else {
+    loginText.style.display = 'block';
   }
 </script>

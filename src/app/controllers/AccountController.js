@@ -59,8 +59,7 @@ class AccountController {
             });
             
             const userInfo = { name : account.name,id: account._id, username: account.username };
-            //console.log(userInfo);
-            res.status(200).json({ success: true, message: 'Đăng nhập thành công', accessToken,userInfo });
+            res.status(200).json({ success: true, message: 'Đăng nhập thành công', accessToken, userInfo });
             
         } catch (error) {
             console.error(error);
@@ -72,10 +71,9 @@ class AccountController {
         try {
             res.clearCookie('userId');
             res.status(200).json({ success: true, message: 'Đăng xuất thành công' });
-            
         } catch (error) {
             console.error(error);
-            res.status(500).json('Có lỗi bên server');
+            res.status(500).json({ success: false, message: 'Có lỗi bên server' });
         }
     }
     

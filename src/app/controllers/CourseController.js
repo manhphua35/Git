@@ -101,6 +101,42 @@ class CourseController {
                 next(error);
             });
     }
+    handleFormAction(req, res, next) {
+        switch (req.body.action) {
+            case 'delete':
+                const accountId = req.cookies.userId;
+                if (!accountId) {
+                    return res.redirect('/login');
+                }
+                Account.findOneAndUpdate(
+                    { _id: accountId, courses: { $in : req.body.courseIds}}, 
+                    { $pull: { courses: { $in : req.body.courseIds} } },
+                    { new: true } 
+                )
+                    .then(updatedAccount => {
+                        if (updatedAccount) {
+                        
+                            return Course.deleteMany({ _id:{ $in : req.body.courseIds} })
+                                .then(() => {
+                                
+                                    res.redirect('back');
+                                })
+                                .catch(error => {
+                                    
+                                    next(error);
+                                });
+                        } else {      
+                            return res.status(403).send('Unauthorized');
+                        }
+                    })
+                    .catch(error => {
+                        next(error);
+                    });
+                break;
+            default:
+                res.json('error');
+        }
+    }
 }
     
 

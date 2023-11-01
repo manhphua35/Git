@@ -23,14 +23,10 @@ class MeController {
         }else{
             try {
                 const user = await Account.findOne({ _id: userId });
-
                 const courseIDs = user.courses;
-
                 const courses = await Course.find({
                     _id: { $in: courseIDs }
-                });
-                
-                
+                });           
                 res.render('me/stored-Courses', {
                     courses: multipleMongooseToObject(courses)
                 });
