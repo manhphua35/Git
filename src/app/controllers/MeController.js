@@ -6,10 +6,8 @@ const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(cookieParser());
 const { multipleMongooseToObject } = require('../../util/mongoose');
-
 class MeController {
     async  storedCourses(req, res) {
         const userId = req.cookies.userId;
@@ -33,5 +31,4 @@ class MeController {
     }
 
 }
-
 module.exports = new MeController();
