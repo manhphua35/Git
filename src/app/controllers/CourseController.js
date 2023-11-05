@@ -1,7 +1,7 @@
 const Course = require('../models/Course');
 const Account = require('../models/Account');
-const { mongooseToObject } = require('../../util/mongoose');
-const {multipleMongooseToObject} =require('../../util/mongoose');
+const { mongooseToObject } = require('../../utils/mongoose');
+const {multipleMongooseToObject} =require('../../utils/mongoose');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express();
@@ -63,7 +63,6 @@ class CourseController {
     }
     
     update(req, res, next) {
-        console.log(req.body);
         Course.updateOne({ _id : req.params.id},req.body)
             .then(() => res.redirect('/me/stored/courses'))
            .catch(next);  
@@ -135,6 +134,25 @@ class CourseController {
                 break;
             default:
                 res.json('error');
+        }
+    }
+    async  getCourses(req, res) {
+        const userId = req.cookies.userId;
+        if (userId==undefined){
+            res.redirect('/account/login');
+        }else{
+            try {
+                const user = await Account.findOne({ _id: userId });
+                const courseIDs = user.courses;
+                const courses = await Course.find({
+                    _id: { $in: courseIDs }
+                });         
+                res.json(courses);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                res.status(500).send('Internal Server Error');
+            }
         }
     }
 }
