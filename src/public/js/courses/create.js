@@ -16,10 +16,13 @@ const userId = getUserIdFromCookie();
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('expenseForm').addEventListener('submit', function(event) {
     event.preventDefault();
+    
     const action = document.getElementById('action').value;
     const prices = document.getElementById('prices').value;
     const note = document.getElementById('note').value;
-    const queryParams = `userId=${userId}&action=${encodeURIComponent(action)}&prices=${prices}&note=${encodeURIComponent(note)}`;
+    const time = document.getElementById('time').value;
+    const queryParams = `userId=${userId}&action=${encodeURIComponent(action)}&prices=${prices}&note=${encodeURIComponent(note)}&time=${encodeURIComponent(time)}`;
+    
     fetch('/courses/store', {
         method: 'POST',
         headers: {

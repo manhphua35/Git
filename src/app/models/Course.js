@@ -10,9 +10,10 @@ const CourseSchema = new Schema(
     prices: { type: Number, required: true },
     note: { type: String },
     user: { type: Schema.Types.String, ref: 'Account' }, 
+    createdAt: { type: Date, default: Date.now, required: true },
   },
   {
-    timestamps: true 
+    timestamps: true,
   }
 );
 

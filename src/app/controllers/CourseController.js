@@ -23,19 +23,18 @@ class CourseController {
     async store(req, res, next) {
         try {
             
-            const { userId, action, prices, note } = req.body;
+            const { userId, action, prices, note,time } = req.body;
             
             const user = await Account.findOne({ _id: userId });
     
             if (!user) {
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
-    
-            
             const newCourse = new Course({
                 action: action,
                 prices: prices,
-                note: note
+                note: note,
+                createdAt: time,
             });
             
             await newCourse.save();
@@ -47,8 +46,6 @@ class CourseController {
             console.error('Error:', error);
             res.status(500).json({ error: 'Có lỗi xảy ra khi lưu hoạt động chi tiêu' });
         }
-        
-        
     }
     edit(req, res, next) {
         Course.findById(req.params.id)

@@ -29,6 +29,9 @@ class MeController {
             }
         }
     }
+    getChart(req,res) {
+        res.render('me/chart');
+    }
 
 }
 module.exports = new MeController();

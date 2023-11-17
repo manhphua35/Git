@@ -1,9 +1,9 @@
-
-  document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('DOMContentLoaded', function(){
     var courseId;
     var containerForm = document.forms['container-form'];
     var deleleForm = document.forms['delete-form'];
     var btnDeletecourse = document.getElementById('btn-delete-course');
+    const tableBody = document.getElementById('activity-table-body');
     $('#delete-course-modal').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget) ;
       courseId = button.data('id') ;
@@ -12,7 +12,6 @@
         deleleForm.action = '/courses/' + courseId + '?_method=DELETE';
         deleleForm.submit();
     }
-    const tableBody = document.getElementById('activity-table-body');
     function groupByDate(courses) {
         const groupedCourses = {};
         courses.forEach(course => {
@@ -32,7 +31,12 @@
               totalAmount += course.prices;
             })
             const formattedTotalAmount = totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-            const dateRow = `<tr><td colspan="6"><strong>Ngày ${date} - ${formattedTotalAmount}</strong></td></tr>`;
+            const dateRow = `<tr><td colspan="6"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
+                timeZone: 'Asia/Ho_Chi_Minh',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })} - Tổng cộng: ${formattedTotalAmount}</strong></td></tr>`;
             tableBody.innerHTML += dateRow;
             courses.forEach(course => {
                 const formattedPrices = course.prices.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -61,6 +65,7 @@
     fetch('/courses/get-courses')
         .then(response => response.json())
         .then(courses => {
+            courses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             const groupedCourses = groupByDate(courses);
             renderGroupedCourses(groupedCourses);
         })
@@ -68,5 +73,4 @@
             console.error('Error:', error);
         });
   
-   
-  });
+   });

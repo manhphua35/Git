@@ -7,7 +7,6 @@
     var userDropdown = document.getElementById('userDropdown');
     var userName = document.getElementById('userName');
     var logout = document.getElementById('logout');
-    
     userName.textContent = name;
     userMenu.style.display = 'block';
     loginText.style.display = 'none';
