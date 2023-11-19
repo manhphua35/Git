@@ -20,14 +20,17 @@
             <label for="note">Nhập ghi chú</label>
             <textarea class="form-control"id="note" name="note"> {{course.note}} </textarea>
         </div>
+        <div class="form-group">
+            <label for="createdAt">Chọn thời gian</label>
+            <input type="datetime-local" class="form-control" id="createdAt" name="createdAt" >
+        </div>
         <input type="hidden" id="userId" name="userId">
         <button type="submit" class="btn btn-primary">Cập nhật hoạt động</button>
     </form>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    // Mã JavaScript của bạn sẽ được viết ở đây
-    const selectedAction = "{{course.action}}";
+     const selectedAction = "{{course.action}}";
     const actionSelect = document.getElementById('action');
     for (let i = 0; i < actionSelect.options.length; i++) {
         if (actionSelect.options[i].value === selectedAction) {
@@ -35,6 +38,5 @@
         }
     }
 });
-
 </script>
 

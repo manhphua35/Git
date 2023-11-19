@@ -13,7 +13,7 @@ const CourseSchema = new Schema(
     createdAt: { type: Date, default: Date.now, required: true },
   },
   {
-    timestamps: true,
+    //timestamps: true,
   }
 );
 

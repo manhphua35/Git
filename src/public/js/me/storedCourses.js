@@ -24,6 +24,13 @@
         return groupedCourses;
     }
     function renderGroupedCourses(groupedCourses) {
+        const noActivityMessage = document.getElementById('no-activity-message');
+        tableBody.innerHTML = '';
+        noActivityMessage.style.display = 'none';
+        // Kiểm tra nếu không có hoạt động nào
+        if (Object.keys(groupedCourses).length === 0) {
+            noActivityMessage.style.display = 'block';
+        }
         tableBody.innerHTML = '';
         for (const [date, courses] of Object.entries(groupedCourses)) {
             let totalAmount = 0;

@@ -22,11 +22,8 @@ class CourseController {
 
     async store(req, res, next) {
         try {
-            
             const { userId, action, prices, note,time } = req.body;
-            
             const user = await Account.findOne({ _id: userId });
-    
             if (!user) {
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
@@ -36,9 +33,7 @@ class CourseController {
                 note: note,
                 createdAt: time,
             });
-            
             await newCourse.save();
-            
             user.courses.push(newCourse._id);
             await user.save(); 
             res.status(200).json({ success: true, message: 'Lưu hoạt động chi tiêu thành công' });
@@ -53,13 +48,13 @@ class CourseController {
             course : mongooseToObject(course)
             }))
             .catch(error => {
-                
                 console.error(error);
                 res.status(500).json({ message: 'Có lỗi xảy ra khi truy vấn dữ liệu.' });
             });
     }
     
     update(req, res, next) {
+        console.log(req.body);
         Course.updateOne({ _id : req.params.id},req.body)
             .then(() => res.redirect('/me/stored/courses'))
            .catch(next);  
