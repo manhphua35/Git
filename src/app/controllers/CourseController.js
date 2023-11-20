@@ -54,7 +54,6 @@ class CourseController {
     }
     
     update(req, res, next) {
-        console.log(req.body);
         Course.updateOne({ _id : req.params.id},req.body)
             .then(() => res.redirect('/me/stored/courses'))
            .catch(next);  

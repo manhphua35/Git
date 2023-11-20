@@ -1,42 +1,60 @@
-    document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function() {
     var courseId;
-    var containerForm = document.forms['container-form'];
-    var deleleForm = document.forms['delete-form'];
-    var btnDeletecourse = document.getElementById('btn-delete-course');
-    const tableBody = document.getElementById('activity-table-body');
+    var deleteForm = document.forms['delete-form'];
+    var btnDeleteCourse = document.getElementById('btn-delete-course');
+    var tableBody = document.getElementById('activity-table-body');
+    var monthSelector = document.getElementById('month-selector');
+    var yearSelector = document.getElementById('year-selector');
+    var totalAmountDisplay = document.getElementById('total-amount-display');
     $('#delete-course-modal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget) ;
-      courseId = button.data('id') ;
-    }); 
-    btnDeletecourse.onclick = function(){
-        deleleForm.action = '/courses/' + courseId + '?_method=DELETE';
-        deleleForm.submit();
-    }
-    function groupByDate(courses) {
+        var button = $(event.relatedTarget);
+        courseId = button.data('id');
+    });
+
+    btnDeleteCourse.onclick = function() {
+        deleteForm.action = '/courses/' + courseId + '?_method=DELETE';
+        deleteForm.submit();
+    };
+
+    function groupByMonthAndYear(courses, selectedMonth, selectedYear) {
         const groupedCourses = {};
+        let monthlyTotal = 0;
+        courses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
         courses.forEach(course => {
-            const createdAt = new Date(course.createdAt).toLocaleDateString('en-US');
-            if (!groupedCourses[createdAt]) {
-                groupedCourses[createdAt] = [];
+            const createdAt = new Date(course.createdAt);
+            const month = createdAt.getMonth();
+            const year = createdAt.getFullYear();
+
+            if (month === selectedMonth && year === selectedYear) {
+                monthlyTotal += course.prices;
+                const dateKey = createdAt.toLocaleDateString('en-US');
+                if (!groupedCourses[dateKey]) {
+                    groupedCourses[dateKey] = [];
+                }
+                groupedCourses[dateKey].push(course);
             }
-            groupedCourses[createdAt].push(course);
         });
+
+        // Cập nhật tổng số tiền trên giao diện
+        totalAmountDisplay.textContent = `Tổng tiêu trong tháng: ${monthlyTotal.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
         return groupedCourses;
     }
+
     function renderGroupedCourses(groupedCourses) {
         const noActivityMessage = document.getElementById('no-activity-message');
         tableBody.innerHTML = '';
         noActivityMessage.style.display = 'none';
-        // Kiểm tra nếu không có hoạt động nào
+
         if (Object.keys(groupedCourses).length === 0) {
             noActivityMessage.style.display = 'block';
         }
-        tableBody.innerHTML = '';
+
         for (const [date, courses] of Object.entries(groupedCourses)) {
             let totalAmount = 0;
-            courses.forEach(course =>{
-              totalAmount += course.prices;
-            })
+            courses.forEach(course => {
+                totalAmount += course.prices;
+            });
             const formattedTotalAmount = totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
             const dateRow = `<tr><td colspan="6"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
                 timeZone: 'Asia/Ho_Chi_Minh',
@@ -45,6 +63,7 @@
                 year: 'numeric'
             })} - Tổng cộng: ${formattedTotalAmount}</strong></td></tr>`;
             tableBody.innerHTML += dateRow;
+
             courses.forEach(course => {
                 const formattedPrices = course.prices.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
                 const row = `
@@ -58,7 +77,7 @@
                             hour: '2-digit',
                             minute: '2-digit',
                             second: '2-digit'
-                        })} </td>
+                        })}</td>
                         <td>
                             <a href="/courses/${course._id}/edit" class="btn btn-primary" data-id="${course._id}">Sửa</a>
                             <a href="#" class="btn btn-danger" data-toggle="modal" data-id="${course._id}" data-target="#delete-course-modal">Xoá</a>
@@ -69,15 +88,28 @@
             });
         }
     }
-    fetch('/courses/get-courses')
-        .then(response => response.json())
-        .then(courses => {
-            courses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            const groupedCourses = groupByDate(courses);
-            renderGroupedCourses(groupedCourses);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-  
-   });
+
+    function updateTable() {
+        const selectedMonth = parseInt(monthSelector.value, 10);
+        const selectedYear = parseInt(yearSelector.value, 10);
+        fetch('/courses/get-courses')
+            .then(response => response.json())
+            .then(courses => {
+                const groupedCourses = groupByMonthAndYear(courses, selectedMonth, selectedYear);
+                renderGroupedCourses(groupedCourses);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    monthSelector.addEventListener('change', updateTable);
+    yearSelector.addEventListener('change', updateTable);
+
+    // Khởi tạo mặc định cho tháng và năm hiện tại
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    monthSelector.value = currentMonth.toString();
+    yearSelector.value = currentYear.toString();
+    updateTable();
+});
