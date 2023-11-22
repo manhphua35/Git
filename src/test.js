@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const localStorage = require('node-localstorage');
 const cors = require('cors');
 const app = express();
+app.use(express.json());
 
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({ extended: true }));

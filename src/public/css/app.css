@@ -297,3 +297,8 @@ h2 {
 
 .service_slic .slick-track {
   margin: 10px 0; }
+
+.table-stored {
+  border: 1px solid #ddd;
+  border-collapse: collapse;
+  width: 100%; }

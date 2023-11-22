@@ -4,10 +4,11 @@ const { mongooseToObject } = require('../../utils/mongoose');
 const {multipleMongooseToObject} =require('../../utils/mongoose');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const moment = require('moment-timezone');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.use(express.json());
 class CourseController {
 
     create(req, res, next) {
@@ -24,6 +25,7 @@ class CourseController {
         try {
             const { userId, action, prices, note,time } = req.body;
             const user = await Account.findOne({ _id: userId });
+            
             if (!user) {
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
@@ -55,7 +57,7 @@ class CourseController {
     
     update(req, res, next) {
         Course.updateOne({ _id : req.params.id},req.body)
-            .then(() => res.redirect('/me/stored/courses'))
+            .then(() => res.status(200).json({ success: true}))
            .catch(next);  
     }
     delete(req, res, next) {
@@ -91,42 +93,7 @@ class CourseController {
                 next(error);
             });
     }
-    handleFormAction(req, res, next) {
-        switch (req.body.action) {
-            case 'delete':
-                const accountId = req.cookies.userId;
-                if (!accountId) {
-                    return res.redirect('/login');
-                }
-                Account.findOneAndUpdate(
-                    { _id: accountId, courses: { $in : req.body.courseIds}}, 
-                    { $pull: { courses: { $in : req.body.courseIds} } },
-                    { new: true } 
-                )
-                    .then(updatedAccount => {
-                        if (updatedAccount) {
-                        
-                            return Course.deleteMany({ _id:{ $in : req.body.courseIds} })
-                                .then(() => {
-                                
-                                    res.redirect('back');
-                                })
-                                .catch(error => {
-                                    
-                                    next(error);
-                                });
-                        } else {      
-                            return res.status(403).send('Unauthorized');
-                        }
-                    })
-                    .catch(error => {
-                        next(error);
-                    });
-                break;
-            default:
-                res.json('error');
-        }
-    }
+
     async  getCourses(req, res) {
         const userId = req.cookies.userId;
         if (userId==undefined){

@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const noActivityMessage = document.getElementById('no-activity-message');
         tableBody.innerHTML = '';
         noActivityMessage.style.display = 'none';
-
+        
         if (Object.keys(groupedCourses).length === 0) {
             noActivityMessage.style.display = 'block';
         }
@@ -65,30 +65,90 @@ document.addEventListener('DOMContentLoaded', function() {
             tableBody.innerHTML += dateRow;
 
             courses.forEach(course => {
+                
+                const formattedDateTime = convertUTCDateToLocalDate(course.createdAt);
+
+                console.log(formattedDateTime);
+                const dropdown = `
+                    <select id="action-${course._id}" name="action" class ="action">
+                        <option value="">--Chọn hành động--</option>
+                        <option value="Ăn uống" ${course.action === "Ăn uống" ? "selected" : ""}>Ăn uống</option>
+                        <option value="Mua sắm" ${course.action === "Mua sắm" ? "selected" : ""}>Mua sắm</option>
+                        <option value="Nhà ở" ${course.action === "Nhà ở" ? "selected" : ""}>Nhà ở</option>
+                        <option value="Đi lại" ${course.action === "Đi lại" ? "selected" : ""}>Đi lại</option>
+                        <option value="Sức khoẻ" ${course.action === "Sức khoẻ" ? "selected" : ""}>Sức khoẻ</option>
+                        <option value="Hoá đơn" ${course.action === "Hoá đơn" ? "selected" : ""}>Hoá đơn</option>
+                        <option value="Khác" ${course.action === "Khác" ? "selected" : ""}>Khác</option>
+                    </select>
+                `;
                 const formattedPrices = course.prices.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
                 const row = `
-                    <tr>
+                    <tr id = "course-${course._id}">
                         <td></td>
-                        <td>${course.action}</td>
-                        <td>${formattedPrices}</td>
-                        <td>${course.note}</td>
-                        <td>${new Date(course.createdAt).toLocaleString('en-US', {
-                            timeZone: 'Asia/Ho_Chi_Minh',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                        })}</td>
+                        <td>${dropdown}</td>
+                        <td><input type="text" id="prices" name="prices" value="${formattedPrices}"></td>
+                        <td><textarea id="note" name="note">${course.note}</textarea></td>
+                        <td><input type="datetime-local" id="date-${course._id}" name="date" value="${formattedDateTime}"></td>
                         <td>
-                            <a href="/courses/${course._id}/edit" class="btn btn-primary" data-id="${course._id}">Sửa</a>
+                            <a class="btn btn-primary" data-id="${course._id}">Sửa</a>
                             <a href="#" class="btn btn-danger" data-toggle="modal" data-id="${course._id}" data-target="#delete-course-modal">Xoá</a>
                         </td>
                     </tr>
                 `;
                 tableBody.innerHTML += row;
+                editclick();
             });
         }
     }
-
+    function editclick() {
+        document.querySelectorAll('.btn.btn-primary').forEach(button => {
+            button.addEventListener('click', function() {
+                const courseId = this.getAttribute('data-id');
+                const row = document.getElementById('course-' + courseId);
+                if (row) {
+                    const actionElement = row.querySelector('#action-' + courseId);
+                    const pricesElement = row.querySelector('#prices');
+                    const noteElement = row.querySelector('#note');
+                    const dateElement = row.querySelector('#date-' + courseId);
+                    if (actionElement && pricesElement && noteElement && dateElement) {
+                        const updatedData = {
+                            action: actionElement.value,
+                            prices: parseFloat(pricesElement.value.replace(/[^0-9.-]+/g, "")),
+                            note: noteElement.value,
+                            createdAt: dateElement.value,
+                        };
+                
+                        saveCourse(courseId, updatedData);
+                    } else {
+                        console.error('One of the elements could not be found');
+                    }
+                } else {
+                    console.error('Row could not be found');
+                }
+            });
+        });
+    }
+    
+    
+    function saveCourse(courseId, updatedData) {
+        fetch('/courses/' + courseId + '?_method=PUT', { 
+            method: 'PUT', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+               window.location.reload();
+            } else {
+                console.error('Lỗi khi lưu: ', data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
     function updateTable() {
         const selectedMonth = parseInt(monthSelector.value, 10);
         const selectedYear = parseInt(yearSelector.value, 10);
@@ -102,7 +162,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
             });
     }
-
+    function convertUTCDateToLocalDate(utcDateString) {
+        // Tạo một đối tượng Date từ chuỗi UTC
+        const dateUTC = new Date(utcDateString);
+        
+        // Kiểm tra xem dateUTC có phải là ngày hợp lệ không
+        if (isNaN(dateUTC)) {
+            throw new Error('Invalid date string: ' + utcDateString);
+        }
+        
+        // Thêm 7 giờ để chuyển sang múi giờ của Việt Nam (UTC+7)
+        const localDate = new Date(dateUTC.getTime() + (7 * 60 * 60 * 1000)); // Thêm 7 giờ
+        
+        // Định dạng lại để phù hợp với input datetime-local
+        const year = localDate.getUTCFullYear();
+        const month = (localDate.getUTCMonth() + 1).toString().padStart(2, '0');
+        const day = localDate.getUTCDate().toString().padStart(2, '0');
+        const hours = localDate.getUTCHours().toString().padStart(2, '0');
+        const minutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+    
+    // Sử dụng hàm này trong hàm renderGrouped
+    
     monthSelector.addEventListener('change', updateTable);
     yearSelector.addEventListener('change', updateTable);
 
