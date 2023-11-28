@@ -6,6 +6,57 @@ document.addEventListener('DOMContentLoaded', function() {
     var monthSelector = document.getElementById('month-selector');
     var yearSelector = document.getElementById('year-selector');
     var totalAmountDisplay = document.getElementById('total-amount-display');
+    let currentPage = 1; // Giữ nguyên trạng thái trang hiện tại
+    const itemsPerPage = 10; 
+    var paginationDisplay = document.getElementById('pagination-display');
+    function updateTable() {
+        const selectedMonth = parseInt(monthSelector.value, 10);
+        const selectedYear = parseInt(yearSelector.value, 10);
+        fetch(`/courses/get-courses?page=${currentPage}&limit=${itemsPerPage}`)
+            .then(response => response.json())
+            .then(data => {
+                totalPages = data.totalPages; // Cập nhật tổng số trang từ dữ liệu API
+                currentPage = data.currentPage; // Cập nhật trang hiện tại
+
+                const groupedCourses = groupByMonthAndYear(data.courses, selectedMonth, selectedYear);
+                renderGroupedCourses(groupedCourses);
+
+                // Cập nhật UI phân trang
+                paginationDisplay.innerHTML = `Trang ${currentPage} trên ${totalPages}`;
+                document.getElementById('previous-page').style.display = currentPage > 1 ? 'inline-block' : 'none';
+                document.getElementById('next-page').style.display = currentPage < totalPages ? 'inline-block' : 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+   function handlePageChange(newPage) {
+    currentPage = newPage;
+    updateTable();
+    }
+    var prevPageButton = document.getElementById('previous-page');
+            if (prevPageButton) {
+                prevPageButton.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        handlePageChange(currentPage - 1);
+                    }
+                });
+            }
+
+    var nextPageButton = document.getElementById('next-page');
+        if (nextPageButton) {
+            nextPageButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                console.log(currentPage, totalPages);
+                if (currentPage < totalPages) {
+                    handlePageChange(currentPage + 1);
+                }
+            });
+    }
+
+    
+
     $('#delete-course-modal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         courseId = button.data('id');
@@ -52,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function groupByMonthAndYear(courses, selectedMonth, selectedYear) {
         const groupedCourses = {};
         let monthlyTotal = 0;
-        courses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
 
         courses.forEach(course => {
             const createdAt = new Date(course.createdAt);
@@ -181,19 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error:', error));
     }
     
-    function updateTable() {
-        const selectedMonth = parseInt(monthSelector.value, 10);
-        const selectedYear = parseInt(yearSelector.value, 10);
-        fetch('/courses/get-courses')
-            .then(response => response.json())
-            .then(courses => {
-                const groupedCourses = groupByMonthAndYear(courses, selectedMonth, selectedYear);
-                renderGroupedCourses(groupedCourses);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
     function convertUTCDateToLocalDate(utcDateString) {
 
         const dateUTC = new Date(utcDateString);
@@ -219,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
     monthSelector.value = currentMonth.toString();
     yearSelector.value = currentYear.toString();
     updateTable();
-    
     
 });
 
@@ -256,5 +293,4 @@ function saveNewActivity(buttonElement) {
     })
     .catch(error => console.error('Error:', error));
 }
-
 

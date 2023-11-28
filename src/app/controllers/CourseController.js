@@ -51,7 +51,6 @@ class CourseController {
         }
     }
     
-    
     edit(req, res, next) {
         Course.findById(req.params.id)
         .then(course => res.render('courses/edit',{
@@ -102,23 +101,85 @@ class CourseController {
             });
     }
 
-    async  getCourses(req, res) {
+    async getCourses(req, res) {
         const userId = req.cookies.userId;
-        if (userId==undefined){
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10;  
+
+        if (userId == undefined) {
             res.redirect('/account/login');
-        }else{
+        } else {
             try {
                 const user = await Account.findOne({ _id: userId });
+                if (!user) {
+                    return res.status(404).send('User not found');
+                }
+
                 const courseIDs = user.courses;
+                const startIndex = (page - 1) * limit;
+                const totalCourses = courseIDs.length;
+
                 const courses = await Course.find({
                     _id: { $in: courseIDs }
-                });         
-                res.json(courses);
-                
+                }).sort({ createdAt: -1 }) // Sắp xếp giảm dần theo thời gian tạo
+                  .skip(startIndex)
+                  .limit(limit);
+
+                res.json({
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCourses / limit),
+                    courses
+                });
+
             } catch (error) {
                 console.error('Error:', error);
                 res.status(500).send('Internal Server Error');
             }
+        }
+    }
+
+    async groupedCourses(req, res){
+        const userId = req.cookies.userId;
+        const selectedMonth = parseInt(req.query.month);
+        const selectedYear = parseInt(req.query.year);
+    
+        if (!userId) {
+            return res.status(401).send('User not authenticated');
+        }
+    
+        try {
+            const user = await Account.findOne({ _id: userId });
+            if (!user) {
+                return res.status(404).send('User not found');
+            }
+    
+            const courses = await Course.find({ _id: { $in: user.courses } });
+            const groupedCourses = {};
+            let monthlyTotal = 0;
+    
+            courses.forEach(course => {
+                const createdAt = new Date(course.createdAt);
+                const month = createdAt.getMonth();
+                const year = createdAt.getFullYear();
+    
+                if (month === selectedMonth && year === selectedYear) {
+                    monthlyTotal += course.prices;
+                    const dateKey = createdAt.toLocaleDateString('en-US');
+                    if (!groupedCourses[dateKey]) {
+                        groupedCourses[dateKey] = [];
+                    }
+                    groupedCourses[dateKey].push(course);
+                }
+            });
+    
+            res.json({
+                totalAmount: monthlyTotal,
+                groupedCourses
+            });
+    
+        } catch (error) {
+            console.error('Error:', error);
+            res.status(500).send('Internal Server Error');
         }
     }
 }
