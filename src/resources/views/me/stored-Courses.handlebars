@@ -1,5 +1,5 @@
 <div class="mt-4">
-  <form name="container-form" method="post" action="/courses/handle-form-actions">
+  <form name="container-form">
     <h3 class="text-center">Hoạt động đã lưu</h3>
     <a href="/me/chart">Xem biểu đồ</a>
     <div class="mt-4 d-flex align-items-center">
@@ -25,14 +25,15 @@
         <option value="2023" selected>2023</option>
       </select>
       <span id="total-amount-display"></span>
-      <table class="table-stored">
+      <div>
+        <table class="table-actions">
         <thead>
           <tr>
             <td></td>
             <th scope="col">Loại hoạt động</th>
             <th scope="col">Số tiền</th>
             <th scope="col">Ghi chú</th>
-            <th scope="col">Thời gian tạo</th>
+            <th scope="col">Thời gian tạo</th> 
             <th></th>
           </tr>
         </thead>
@@ -40,10 +41,10 @@
         <tbody id="activity-table-body">    
         </tbody>
       </table>
+      </div>
     </div>
   </form>
 </div>
-
 <div id="delete-course-modal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">

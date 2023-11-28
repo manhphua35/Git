@@ -23,27 +23,35 @@ class CourseController {
 
     async store(req, res, next) {
         try {
-            const { userId, action, prices, note,time } = req.body;
+            const userId = req.cookies.userId;
+            const { action, prices, note, time } = req.body;
+    
+    
             const user = await Account.findOne({ _id: userId });
-            
             if (!user) {
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
-            const newCourse = new Course({
+    
+            // Tạo đối tượng mới với dữ liệu từ yêu cầu
+            const newExpense = new Course({
                 action: action,
                 prices: prices,
                 note: note,
-                createdAt: time,
+                createdAt: time ? new Date(time) : new Date(), 
             });
-            await newCourse.save();
-            user.courses.push(newCourse._id);
-            await user.save(); 
+            await newExpense.save();
+    
+            user.courses.push(newExpense._id);
+            await user.save();
+    
             res.status(200).json({ success: true, message: 'Lưu hoạt động chi tiêu thành công' });
         } catch (error) {
             console.error('Error:', error);
             res.status(500).json({ error: 'Có lỗi xảy ra khi lưu hoạt động chi tiêu' });
         }
     }
+    
+    
     edit(req, res, next) {
         Course.findById(req.params.id)
         .then(course => res.render('courses/edit',{

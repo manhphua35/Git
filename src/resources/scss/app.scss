@@ -333,10 +333,33 @@ z-index: -1;
 .service_slic .slick-track{
     margin: 10px 0;
 }
-
-.table-stored
-{
-	border: 1px solid #ddd;
+.table-actions {
+	border: 1px solid #ccc;
 	border-collapse: collapse;
-	width: 100%;
-}
+  }
+  
+  .table-actions tr {
+	height: 30px;
+	border-bottom: 1px solid #ccc;
+  }
+  
+  .table-actions textarea,
+  .table-actions input,
+  .table-actions select,
+  .table-actions .btn a {
+	box-sizing: border-box; 
+	height: 30px;
+	vertical-align: middle; 
+	padding: 0; 
+	border: 0; 
+	text-align: center;
+  }
+  
+  .table-actions .btn a {
+	display: inline-block;
+	padding: 0; 
+	line-height: 30px; 
+  }
+  .table-actions td{
+	border: 1px solid #ccc;
+  }

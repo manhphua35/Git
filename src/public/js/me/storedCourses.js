@@ -10,11 +10,44 @@ document.addEventListener('DOMContentLoaded', function() {
         var button = $(event.relatedTarget);
         courseId = button.data('id');
     });
-
     btnDeleteCourse.onclick = function() {
         deleteForm.action = '/courses/' + courseId + '?_method=DELETE';
         deleteForm.submit();
     };
+
+    function createclick() {
+        document.querySelectorAll('.btn-create').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault(); 
+                const dateOfRow = this.getAttribute('data-date');
+                const newRow = `
+                <tr>
+                    <td></td>
+                    <td>
+                        <select name="action" class="action">
+                            <option value="">--Chọn hành động--</option>
+                            <option value="Ăn uống">Ăn uống</option>
+                            <option value="Mua sắm">Mua sắm</option>
+                            <option value="Nhà ở">Nhà ở</option>
+                            <option value="Đi lại">Đi lại</option>
+                            <option value="Sức khoẻ">Sức khoẻ</option>
+                            <option value="Hoá đơn">Hoá đơn</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="prices" value=""></td>
+                    <td><textarea name="note"></textarea></td>
+                    <td><input type="datetime-local" name="date" value=""></td>
+                    <td>
+                        <input type="button" class="btn btn-primary" onclick="saveNewActivity(this)" value="Lưu">
+                    </td>
+                </tr>
+                 `;  
+                const dateRow = document.getElementById(`date-row-${dateOfRow}`);
+                dateRow.insertAdjacentHTML('afterend', newRow);
+            });
+        });
+    }
 
     function groupByMonthAndYear(courses, selectedMonth, selectedYear) {
         const groupedCourses = {};
@@ -36,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Cập nhật tổng số tiền trên giao diện
         totalAmountDisplay.textContent = `Tổng tiêu trong tháng: ${monthlyTotal.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
         return groupedCourses;
     }
@@ -56,19 +88,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalAmount += course.prices;
             });
             const formattedTotalAmount = totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-            const dateRow = `<tr><td colspan="6"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
+            const formattedDate = new Date(date).toISOString().split('T')[0];
+            const dateRowId = `date-row-${formattedDate}`; 
+            const dateRow = `<tr id="${dateRowId}"><td colspan="6"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
                 timeZone: 'Asia/Ho_Chi_Minh',
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
-            })} - Tổng cộng: ${formattedTotalAmount}</strong></td></tr>`;
+            })} - Tổng cộng: ${formattedTotalAmount}</strong>-<a href="#" class="btn-create" data-date="${formattedDate}">Thêm hoạt động</a></td></tr>`;
             tableBody.innerHTML += dateRow;
-
             courses.forEach(course => {
-                
                 const formattedDateTime = convertUTCDateToLocalDate(course.createdAt);
-
-                console.log(formattedDateTime);
                 const dropdown = `
                     <select id="action-${course._id}" name="action" class ="action">
                         <option value="">--Chọn hành động--</option>
@@ -97,9 +127,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 tableBody.innerHTML += row;
                 editclick();
+                createclick();
             });
         }
     }
+    
     function editclick() {
         document.querySelectorAll('.btn.btn-primary').forEach(button => {
             button.addEventListener('click', function() {
@@ -163,18 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     function convertUTCDateToLocalDate(utcDateString) {
-        // Tạo một đối tượng Date từ chuỗi UTC
+
         const dateUTC = new Date(utcDateString);
-        
-        // Kiểm tra xem dateUTC có phải là ngày hợp lệ không
         if (isNaN(dateUTC)) {
             throw new Error('Invalid date string: ' + utcDateString);
         }
-        
-        // Thêm 7 giờ để chuyển sang múi giờ của Việt Nam (UTC+7)
-        const localDate = new Date(dateUTC.getTime() + (7 * 60 * 60 * 1000)); // Thêm 7 giờ
-        
-        // Định dạng lại để phù hợp với input datetime-local
+        const localDate = new Date(dateUTC.getTime() + (7 * 60 * 60 * 1000)); 
         const year = localDate.getUTCFullYear();
         const month = (localDate.getUTCMonth() + 1).toString().padStart(2, '0');
         const day = localDate.getUTCDate().toString().padStart(2, '0');
@@ -184,15 +210,51 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
     
-    // Sử dụng hàm này trong hàm renderGrouped
     
     monthSelector.addEventListener('change', updateTable);
     yearSelector.addEventListener('change', updateTable);
 
-    // Khởi tạo mặc định cho tháng và năm hiện tại
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     monthSelector.value = currentMonth.toString();
     yearSelector.value = currentYear.toString();
     updateTable();
+    
+    
 });
+
+
+function saveNewActivity(buttonElement) {
+
+    const rowElement = buttonElement.closest('tr');
+    const formData = new FormData();
+    rowElement.querySelectorAll('[name]').forEach(input => {
+        formData.append(input.name, input.value);
+    });
+
+    const newActivity = {
+        action: formData.get('action'),
+        prices: parseFloat(formData.get('prices').replace(/[^0-9.-]+/g, "")),
+        note: formData.get('note'),
+        time: formData.get('date')
+    };
+
+    fetch('/courses/store', { 
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newActivity)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            console.error('Lỗi khi lưu: ', data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
