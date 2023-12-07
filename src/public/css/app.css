@@ -315,7 +315,8 @@ h2 {
   vertical-align: middle;
   padding: 0;
   border: 0;
-  text-align: center; }
+  text-align: center;
+  border-radius: 10px; }
 
 .table-actions .btn a {
   display: inline-block;
@@ -324,3 +325,17 @@ h2 {
 
 .table-actions td {
   border: 1px solid #ccc; }
+
+.table-actions .title {
+  background: #f1f1f1;
+  text-align: center; }
+
+.paging ul {
+  list-style: none;
+  display: flex; }
+
+.paging .paginationjs-page, .paginationjs-ellipsis, .paginationjs-prev, .paginationjs-next {
+  width: 30px;
+  height: 30px;
+  border: 1px solid black;
+  text-align: center; }

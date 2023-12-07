@@ -25,14 +25,10 @@ class CourseController {
         try {
             const userId = req.cookies.userId;
             const { action, prices, note, time } = req.body;
-    
-    
             const user = await Account.findOne({ _id: userId });
             if (!user) {
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
-    
-            // Tạo đối tượng mới với dữ liệu từ yêu cầu
             const newExpense = new Course({
                 action: action,
                 prices: prices,
@@ -40,10 +36,8 @@ class CourseController {
                 createdAt: time ? new Date(time) : new Date(), 
             });
             await newExpense.save();
-    
             user.courses.push(newExpense._id);
             await user.save();
-    
             res.status(200).json({ success: true, message: 'Lưu hoạt động chi tiêu thành công' });
         } catch (error) {
             console.error('Error:', error);
@@ -67,6 +61,7 @@ class CourseController {
             .then(() => res.status(200).json({ success: true}))
            .catch(next);  
     }
+    
     delete(req, res, next) {
         const courseId = req.params.id;
         const accountId = req.cookies.userId;
@@ -103,46 +98,14 @@ class CourseController {
 
     async getCourses(req, res) {
         const userId = req.cookies.userId;
-        const page = parseInt(req.query.page) || 1; 
-        const limit = parseInt(req.query.limit) || 10;  
-
-        if (userId == undefined) {
-            res.redirect('/account/login');
-        } else {
-            try {
-                const user = await Account.findOne({ _id: userId });
-                if (!user) {
-                    return res.status(404).send('User not found');
-                }
-
-                const courseIDs = user.courses;
-                const startIndex = (page - 1) * limit;
-                const totalCourses = courseIDs.length;
-
-                const courses = await Course.find({
-                    _id: { $in: courseIDs }
-                }).sort({ createdAt: -1 }) // Sắp xếp giảm dần theo thời gian tạo
-                  .skip(startIndex)
-                  .limit(limit);
-
-                res.json({
-                    currentPage: page,
-                    totalPages: Math.ceil(totalCourses / limit),
-                    courses
-                });
-
-            } catch (error) {
-                console.error('Error:', error);
-                res.status(500).send('Internal Server Error');
-            }
-        }
-    }
-
-    async groupedCourses(req, res){
-        const userId = req.cookies.userId;
         const selectedMonth = parseInt(req.query.month);
         const selectedYear = parseInt(req.query.year);
-    
+        const page = parseInt(req.query.page) || 1; 
+        if(!(req.query.page) || req.query.page < 1) {
+            page = 1;
+        }
+        const limit = parseInt(req.query.limit) || 10; 
+        const startIndex = (page - 1) * limit;
         if (!userId) {
             return res.status(401).send('User not authenticated');
         }
@@ -153,26 +116,40 @@ class CourseController {
                 return res.status(404).send('User not found');
             }
     
-            const courses = await Course.find({ _id: { $in: user.courses } });
-            const groupedCourses = {};
-            let monthlyTotal = 0;
+            const courses = await Course.find({
+                _id: { $in: user.courses },
+                createdAt: {
+                    $gte: new Date(selectedYear, selectedMonth, 1),
+                    $lt: new Date(selectedYear, selectedMonth + 1, 0)
+                }
+            }).sort({ createdAt: -1 })
+              .skip(startIndex)
+              .limit(limit);
     
-            courses.forEach(course => {
-                const createdAt = new Date(course.createdAt);
-                const month = createdAt.getMonth();
-                const year = createdAt.getFullYear();
-    
-                if (month === selectedMonth && year === selectedYear) {
-                    monthlyTotal += course.prices;
-                    const dateKey = createdAt.toLocaleDateString('en-US');
-                    if (!groupedCourses[dateKey]) {
-                        groupedCourses[dateKey] = [];
-                    }
-                    groupedCourses[dateKey].push(course);
+            const totalCourses = await Course.countDocuments({
+                _id: { $in: user.courses },
+                createdAt: {
+                    $gte: new Date(selectedYear, selectedMonth, 1),
+                    $lt: new Date(selectedYear, selectedMonth + 1, 0)
                 }
             });
     
+            const groupedCourses = {};
+            let monthlyTotal = 0;
+            courses.forEach(course => {
+                const createdAt = new Date(course.createdAt);
+                const dateKey = createdAt.toISOString().split('T')[0];
+                monthlyTotal += course.prices;
+                if (!groupedCourses[dateKey]) {
+                    groupedCourses[dateKey] = [];
+                }
+                groupedCourses[dateKey].push(course);
+            });
+    
             res.json({
+                currentPage: page,
+                total : totalCourses,
+                totalPages: Math.ceil(totalCourses / limit),
                 totalAmount: monthlyTotal,
                 groupedCourses
             });
@@ -182,6 +159,27 @@ class CourseController {
             res.status(500).send('Internal Server Error');
         }
     }
+
+    async getData(req, res) {
+        const userId = req.cookies.userId;
+        if (userId==undefined){
+            res.redirect('/account/login');
+        }else{
+            try {
+                const user = await Account.findOne({ _id: userId });
+                const courseIDs = user.courses;
+                const courses = await Course.find({
+                    _id: { $in: courseIDs }
+                });         
+                res.json(courses);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        }
+    }
+    
 }
     
 

@@ -11,12 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gửi yêu cầu tới API và xử lý dữ liệu
     function fetchChartData(year) {
         // Giả sử URL này trả về tất cả dữ liệu, không lọc theo năm
-        fetch('/courses/get-courses')
+        fetch('/courses/get-data')
             .then(response => response.json())
             .then(courses => {
                 // Lọc dữ liệu theo năm trước khi nhóm theo tháng
                 const filteredCourses = courses.filter(course => 
-                    new Date(course.createdAt).getFullYear() === year);
+                new Date(course.createdAt).getFullYear() === year);
                 const groupedCourses = groupByTime(filteredCourses);
                 renderChart(groupedCourses);
             })

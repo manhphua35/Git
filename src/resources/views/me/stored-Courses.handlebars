@@ -27,28 +27,23 @@
       <span id="total-amount-display"></span>
       <div>
         <table class="table-actions">
-        <thead>
-          <tr>
+          <tr class="title">
             <td></td>
-            <th scope="col">Loại hoạt động</th>
-            <th scope="col">Số tiền</th>
-            <th scope="col">Ghi chú</th>
-            <th scope="col">Thời gian tạo</th> 
-            <th></th>
+            <td><b>Loại hoạt động</b></td>
+            <td><b>Số tiền</b></td>
+            <td><b>Ghi chú</b></td>
+            <td><b>Thời gian tạo</b></td>
+            <td><b>Thao tác</b></td>
           </tr>
-        </thead>
         <div id="no-activity-message" class="text-center" style="display: none;">Không có hoạt động nào.<a href="/courses/create"> Thêm hoạt động</a></div>
         <tbody id="activity-table-body">    
         </tbody>
       </table>
-      <div id="pagination-display">
-      
-      </div>
-      <button id="previous-page">Trang Trước</button>
-      <button id="next-page">Trang Sau</button>
-      </div>
     </div>
   </form>
+
+</div>
+ <div id="paging" class="paging">
 </div>
 <div id="delete-course-modal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -69,7 +64,9 @@
     </div>
   </div>
 </div>
-<form name="delete-form" method="post"></form>
-<script src="/js/me/storedCourses.js"> </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
+<form name="delete-form" method="post"></form>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/js/library/pagination.js"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="/js/me/storedCourses.js"> </script>
