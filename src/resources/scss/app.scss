@@ -370,6 +370,18 @@ z-index: -1;
 	text-align: center;
 }
 
+.content-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: start;
+    gap: 20px;
+}
+
+.table-container, .statistics-container {
+    flex: 1;
+}
+
+
 .paging ul{
 	list-style: none;
 	display: flex;

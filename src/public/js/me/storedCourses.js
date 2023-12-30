@@ -1,10 +1,13 @@
 var monthSelector = document.getElementById('month-selector');
+var test = parseInt(monthSelector.value, 10);
 var yearSelector = document.getElementById('year-selector');
+var selectedYear = parseInt(yearSelector.value);
 var tableBody = document.getElementById('activity-table-body');
 var totalAmountDisplay = document.getElementById('total-amount-display');
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    var selectedMonth = parseInt(monthSelector.value);
     var courseId;
     var deleteForm = document.forms['delete-form'];
     var btnDeleteCourse = document.getElementById('btn-delete-course');
@@ -25,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     monthSelector.value = currentMonth.toString();
     yearSelector.value = currentYear.toString();
     updateTable();
+
     
 });
 
@@ -166,7 +170,7 @@ function editclick() {
                 if (actionElement && pricesElement && noteElement && dateElement) {
                     const updatedData = {
                         action: actionElement.value,
-                        prices: parseFloat(pricesElement.value.replace(/[^0-9.-]+/g, "")),
+                        prices: parseFloat(pricesElement.value.replace(/[^0-9]+/g, "")),
                         note: noteElement.value,
                         createdAt: dateElement.value,
                     };
@@ -224,7 +228,7 @@ function updateTable(currentPage) {
     const itemsPerPage = 10;
     const selectedMonth = parseInt(monthSelector.value, 10);
     const selectedYear = parseInt(yearSelector.value, 10);
-    
+    fetchMonthlyStatistics(selectedMonth, selectedYear);    
     return fetch(`/courses/get-courses?month=${selectedMonth}&year=${selectedYear}&page=${currentPage}&limit=${itemsPerPage}`)
         .then(response => {
             if (!response.ok) {
@@ -272,6 +276,7 @@ function initializePagination(totalItems, itemsPerPage) {
     });
 }
 
+
 function handlePageChange(pageNumber) {
     updateTable(pageNumber).then(data => {
         updatePagination(data.totalPages, pageNumber);
@@ -280,5 +285,78 @@ function handlePageChange(pageNumber) {
     });
 }
 
-initializePagination(30, 10);
+
+initializePagination(20, 10);
+
+async function fetchMonthlyStatistics(month, year) {
+    try {
+        const response = await fetch(`/courses/getmonthlyaction?month=${month}&year=${year}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        renderStatistics(data);
+    } catch (error) {
+        console.error('Fetch error:', error);
+    }
+}
+
+
+function renderStatistics(data) {
+    let statisticsHtml = "<h3>Thống Kê Chi Tiêu</h3>";
+
+    // Hiển thị tổng kết theo lĩnh vực
+    for (const [category, total] of Object.entries(data.summary)) {
+        statisticsHtml += `<p>${category}: ${total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+    }
+
+    // Hoạt động chi tiêu cao nhất và lĩnh vực chi tiêu nhiều nhất
+    statisticsHtml += `<p>Hoạt động chi tiêu cao nhất: ${data.maxExpense.activity} - ${data.maxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+    statisticsHtml += `<p>Lĩnh vực chi tiêu cao nhất: ${data.maxCategory.category} - ${data.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+
+    // So sánh với tháng trước
+    statisticsHtml += `<p>So sánh với tháng trước: ${data.difference.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+
+    document.getElementById('statistics-container').innerHTML = statisticsHtml;
+}
+
+
+
+function calculateStatistics(groupedCourses) {
+    const statistics = {
+        "Ăn uống": 0,
+        "Mua sắm": 0,
+        "Nhà ở": 0,
+        "Đi lại": 0,
+        "Sức khoẻ": 0,
+        "Hoá đơn": 0,
+        "Khác": 0,
+        "maxExpense": { amount: 0, activity: null }, // Thêm để lưu hoạt động chi tiêu cao nhất
+        "maxCategory": { category: null, total: 0 } // Thêm để lưu lĩnh vực chi tiêu nhiều nhất
+    };
+
+    for (const courses of Object.values(groupedCourses)) {
+        courses.forEach(course => {
+            const category = statistics.hasOwnProperty(course.action) ? course.action : "Khác";
+            statistics[category] += course.prices;
+
+            // Cập nhật hoạt động chi tiêu cao nhất
+            if (course.prices > statistics.maxExpense.amount) {
+                statistics.maxExpense = { amount: course.prices, activity: course.action };
+            }
+        });
+    }
+
+    // Xác định lĩnh vực chi tiêu nhiều nhất
+    for (const [category, total] of Object.entries(statistics)) {
+        if (typeof total === 'number' && total > statistics.maxCategory.total) {
+            statistics.maxCategory = { category, total };
+        }
+    }
+
+    return statistics;
+}
+
+
+
 

@@ -330,6 +330,15 @@ h2 {
   background: #f1f1f1;
   text-align: center; }
 
+.content-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: start;
+  gap: 20px; }
+
+.table-container, .statistics-container {
+  flex: 1; }
+
 .paging ul {
   list-style: none;
   display: flex; }

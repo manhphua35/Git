@@ -23,9 +23,10 @@
         <option value="2021">2021</option>
         <option value="2022">2022</option>
         <option value="2023" selected>2023</option>
+        <option value="2024">2024</option>
       </select>
       <span id="total-amount-display"></span>
-      <div>
+      <div class="content-container d-flex">
         <table class="table-actions">
           <tr class="title">
             <td></td>
@@ -39,6 +40,7 @@
         <tbody id="activity-table-body">    
         </tbody>
       </table>
+       <div class="statistics-container" id="statistics-container"></div>
     </div>
   </form>
 
@@ -67,6 +69,6 @@
 
 <form name="delete-form" method="post"></form>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="/js/library/pagination.js"> </script>
+<script src="/js/library/pagination.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<script src="/js/me/storedCourses.js"> </script>
+<script src="/js/me/storedCourses.js"></script>

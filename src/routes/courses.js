@@ -10,6 +10,7 @@ router.delete('/:id',courseController.delete);
 router.get('/create', courseController.create);
 router.post('/store',courseController.store);
 router.get('/get-data',courseController.getData);
+router.get('/getmonthlyaction', courseController.getMonthlyStatistics);
 
 
 module.exports = router;
