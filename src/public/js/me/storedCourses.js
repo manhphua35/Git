@@ -29,6 +29,22 @@ document.addEventListener('DOMContentLoaded', function() {
     yearSelector.value = currentYear.toString();
     updateTable();
 
+    document.getElementById('exportButton').addEventListener('click', function() {
+        const month = new Date().getMonth() + 1; // Lấy tháng hiện tại
+        const year = new Date().getFullYear(); // Lấy năm hiện tại
+    
+        // Đường dẫn đến endpoint export của bạn
+        const exportApiPath = `/courses/exportActivitiesToExcel?month=${month}&year=${year}`;
+    
+        // Tạo liên kết tạm thời và kích hoạt tải xuống
+        const a = document.createElement("a");
+        a.href = exportApiPath;
+        a.download = `HoatDong_Thang_${month}_${year}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+    
     
 });
 
@@ -388,8 +404,6 @@ function showDetailsModal(data) {
         modal.style.display = "none";
     });
 }
-
-
 
 function formatDateTime(dateTimeStr) {
     const date = new Date(dateTimeStr);

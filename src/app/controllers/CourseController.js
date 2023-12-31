@@ -4,6 +4,11 @@ const { mongooseToObject } = require('../../utils/mongoose');
 const {multipleMongooseToObject} =require('../../utils/mongoose');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const fs = require('fs');
+
+const ExcelJS = require('exceljs');
+const path = require('path');
+
 const moment = require('moment-timezone');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -274,9 +279,6 @@ class CourseController {
                     previousmaxCategory = { category, total };
                 }
             }
-
-            
-            
     
             const previousMonthTotal = previousMonthCourses.reduce((acc, course) => acc + course.prices, 0);
             const difference = currentMonthTotal - previousMonthTotal;
@@ -303,6 +305,64 @@ class CourseController {
         } catch (error) {
             console.error('Error:', error);
             res.status(500).send('Internal Server Error');
+        }
+    }
+
+    async exportActivitiesToExcel(req, res) {
+        try {
+            const month = parseInt(req.query.month);
+            const year = parseInt(req.query.year);
+    
+            // Lấy dữ liệu từ cơ sở dữ liệu
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+            const activities = await Course.find({
+                createdAt: { $gte: startDate, $lt: endDate }
+            });
+    
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet(`Hoạt Động Tháng ${month}-${year}`);
+    
+            // Định nghĩa các cột
+            worksheet.columns = [
+                { header: 'ID', key: 'id', width: 10 },
+                { header: 'Hoạt Động', key: 'activity', width: 30 },
+                { header: 'Số Tiền', key: 'amount', width: 15 },
+                { header: 'Ghi Chú', key: 'note', width: 30 },
+                { header: 'Ngày Tạo', key: 'createdAt', width: 20 }
+            ];
+    
+            // Thêm dữ liệu vào worksheet
+            activities.forEach(activity => {
+                worksheet.addRow({
+                    id: activity._id.toString(),
+                    activity: activity.action,
+                    amount: activity.prices,
+                    note: activity.note,
+                    createdAt: moment(activity.createdAt).format('YYYY-MM-DD')
+                });
+            });
+    
+            worksheet.getColumn('amount').numFmt = '0.00$';
+    
+            // Tạo và lưu file Excel
+            const fileName = `HoatDong_Thang_${month}_${year}.xlsx`;
+            const filePath = path.join(__dirname, fileName);
+            await workbook.xlsx.writeFile(filePath);
+            
+            res.setHeader('Content-Disposition', 'attachment; filename=' + fileName);
+
+            res.download(filePath, fileName, (err) => {
+                if (err) {
+                    console.error('Error during file download', err);
+                    res.status(500).send('Error during file download');
+                } else {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            res.status(500).send('Server Error');
         }
     }
     

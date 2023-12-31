@@ -11,6 +11,6 @@ router.get('/create', courseController.create);
 router.post('/store',courseController.store);
 router.get('/get-data',courseController.getData);
 router.get('/getmonthlyaction', courseController.getMonthlyStatistics);
-
+router.get('/exportActivitiesToExcel', courseController.exportActivitiesToExcel);
 
 module.exports = router;
