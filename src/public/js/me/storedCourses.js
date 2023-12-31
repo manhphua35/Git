@@ -115,7 +115,7 @@ function renderGroupedCourses(groupedCourses) {
         const formattedTotalAmount = totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         const formattedDate = new Date(date).toISOString().split('T')[0];
         const dateRowId = `date-row-${formattedDate}`; 
-        const dateRow = `<tr id="${dateRowId}"><td colspan="6"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
+        const dateRow = `<tr id="${dateRowId}"><td colspan="6" style="text-align: center;"><strong>Ngày ${new Date(date).toLocaleString('vi-VN', {
             timeZone: 'Asia/Ho_Chi_Minh',
             day: '2-digit',
             month: '2-digit',
@@ -276,7 +276,6 @@ function initializePagination(totalItems, itemsPerPage) {
     });
 }
 
-
 function handlePageChange(pageNumber) {
     updateTable(pageNumber).then(data => {
         updatePagination(data.totalPages, pageNumber);
@@ -284,7 +283,6 @@ function handlePageChange(pageNumber) {
         console.error('Error:', error);
     });
 }
-
 
 initializePagination(20, 10);
 
@@ -304,59 +302,100 @@ async function fetchMonthlyStatistics(month, year) {
 
 function renderStatistics(data) {
     let statisticsHtml = "<h3>Thống Kê Chi Tiêu</h3>";
+   
+    // Thống kê cho tháng hiện tại
+    statisticsHtml += `<h4>Tháng hiện tại (${data.currentMonth.month}/${data.currentMonth.year})</h4>`;
+    for (const [category, total] of Object.entries(data.currentMonth.summary)) {
+        statisticsHtml += `<p>${category}: ${total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+    }
+    statisticsHtml += `<p>Hoạt động chi tiêu cao nhất: ${data.currentMonth.maxExpense.activity} - ${data.currentMonth.maxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} - ${formatDateTime(data.currentMonth.maxExpense.time)}</p>`;
+    statisticsHtml += `<p>Lĩnh vực chi tiêu cao nhất: ${data.currentMonth.maxCategory.category} - ${data.currentMonth.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
 
-    // Hiển thị tổng kết theo lĩnh vực
-    for (const [category, total] of Object.entries(data.summary)) {
+    
+    // Thống kê cho tháng trước
+    statisticsHtml += `<h4>Tháng trước (${data.previousMonth.month}/${data.previousMonth.year})</h4>`;
+    for (const [category, total] of Object.entries(data.previousMonth.summary)) {
         statisticsHtml += `<p>${category}: ${total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
     }
 
-    // Hoạt động chi tiêu cao nhất và lĩnh vực chi tiêu nhiều nhất
-    statisticsHtml += `<p>Hoạt động chi tiêu cao nhất: ${data.maxExpense.activity} - ${data.maxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
-    statisticsHtml += `<p>Lĩnh vực chi tiêu cao nhất: ${data.maxCategory.category} - ${data.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
-
+    //console.log(data.previousMonth.previousmaxCategory);
     // So sánh với tháng trước
-    statisticsHtml += `<p>So sánh với tháng trước: ${data.difference.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+    const differenceFormatted = data.difference.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    const diffSign = data.difference < 0 ? "" : "+"; // Thêm dấu cộng cho số dương
+    statisticsHtml += `<p>So sánh với tháng trước: ${diffSign}${differenceFormatted}</p>`;
+
+    // Nút Xem chi tiết
+    statisticsHtml += `<button id="detailsButton" type="button">Xem chi tiết</button>`;
 
     document.getElementById('statistics-container').innerHTML = statisticsHtml;
+
+    // Thêm sự kiện cho nút Xem chi tiết
+    document.getElementById('detailsButton').addEventListener('click', function() {
+        showDetailsModal(data);
+    });
+}
+
+function showDetailsModal(data) {
+    let modalContentHtml = `<h4>Chi Tiết So Sánh Tháng ${data.currentMonth.month}/${data.currentMonth.year} và Tháng ${data.previousMonth.month}/${data.previousMonth.year}</h4>`;
+
+    modalContentHtml += `
+        <table class="table-month-actions">
+            <thead>
+                <tr>
+                    <td><b>Tiêu chí</b></td>
+                    <td><b>Tháng ${data.currentMonth.month}/${data.currentMonth.year}</b></td>
+                    <td><b>Tháng ${data.previousMonth.month}/${data.previousMonth.year}</b></td>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    for (const category in data.currentMonth.summary) {
+        const currentAmount = data.currentMonth.summary[category].toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        const previousAmount = data.previousMonth.summary[category] ? data.previousMonth.summary[category].toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : '0 VND';
+        modalContentHtml += `
+            <tr>
+                <td>${category}</td>
+                <td>${currentAmount}</td>
+                <td>${previousAmount}</td>
+            </tr>`;
+    }
+
+    modalContentHtml += `
+                <tr>
+                    <td>Hoạt Động Chi Tiêu Cao Nhất</td>
+                    <td>${data.currentMonth.maxExpense.activity} - ${data.currentMonth.maxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td>${data.previousMonth.previousmaxExpense.activity} - ${data.previousMonth.previousmaxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                </tr>
+                <tr>
+                    <td>Lĩnh Vực Chi Tiêu Cao Nhất</td>
+                    <td>${data.currentMonth.maxCategory.category} - ${data.currentMonth.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td>${data.previousMonth.previousmaxCategory.category} - ${data.previousMonth.previousmaxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                </tr>
+                <tr>
+                    <td>Tổng Chi Tiêu</td>
+                    <td>${data.currentMonth.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td>${data.previousMonth.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                </tr>
+            </tbody>
+        </table>`;
+
+    document.getElementById('modalDetailsContent').innerHTML = modalContentHtml;
+    // Hiển thị modal
+    var modal = document.getElementById('detailsModal');
+    modal.style.display = "block";
+
+    modal.querySelector('.close').addEventListener('click', function() {
+        modal.style.display = "none";
+    });
 }
 
 
 
-function calculateStatistics(groupedCourses) {
-    const statistics = {
-        "Ăn uống": 0,
-        "Mua sắm": 0,
-        "Nhà ở": 0,
-        "Đi lại": 0,
-        "Sức khoẻ": 0,
-        "Hoá đơn": 0,
-        "Khác": 0,
-        "maxExpense": { amount: 0, activity: null }, // Thêm để lưu hoạt động chi tiêu cao nhất
-        "maxCategory": { category: null, total: 0 } // Thêm để lưu lĩnh vực chi tiêu nhiều nhất
-    };
-
-    for (const courses of Object.values(groupedCourses)) {
-        courses.forEach(course => {
-            const category = statistics.hasOwnProperty(course.action) ? course.action : "Khác";
-            statistics[category] += course.prices;
-
-            // Cập nhật hoạt động chi tiêu cao nhất
-            if (course.prices > statistics.maxExpense.amount) {
-                statistics.maxExpense = { amount: course.prices, activity: course.action };
-            }
-        });
-    }
-
-    // Xác định lĩnh vực chi tiêu nhiều nhất
-    for (const [category, total] of Object.entries(statistics)) {
-        if (typeof total === 'number' && total > statistics.maxCategory.total) {
-            statistics.maxCategory = { category, total };
-        }
-    }
-
-    return statistics;
+function formatDateTime(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    const day = date.getDate();
+    const month = date.getMonth() + 1; 
+    const year = date.getFullYear();
+    return `Ngày ${day} Tháng ${month} Năm ${year}`;
 }
-
-
-
 

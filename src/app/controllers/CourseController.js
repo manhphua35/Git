@@ -198,78 +198,114 @@ class CourseController {
         if (!userId) {
             return res.status(401).send('User not authenticated');
         }
-
+    
         try {
             const user = await Account.findOne({ _id: userId });
             if (!user) {
                 return res.status(404).send('User not found');
             }
-
-            // Điều chỉnh cách tạo ngày tháng
-            const startDate = new Date(selectedYear, selectedMonth, 1);
-            const endDate = new Date(selectedYear, selectedMonth + 1, 1);
-
+    
+            const currentMonthStartDate = new Date(selectedYear, selectedMonth, 1);
+            const currentMonthEndDate = new Date(selectedYear, selectedMonth + 1, 0);
+    
             const courses = await Course.find({
                 _id: { $in: user.courses },
-                createdAt: { $gte: startDate, $lt: endDate }
+                createdAt: { $gte: currentMonthStartDate, $lt: currentMonthEndDate }
             });
-
-
-                const summary = courses.reduce((acc, course) => {
-                    const category = course.action;
-                    if (!acc[category]) {
-                        acc[category] = 0;
-                    }
-                    acc[category] += course.prices;
-                    return acc;
-                }, {});
-
-                let maxExpense = { amount: 0, activity: null };
-                courses.forEach(course => {
-                    if (course.prices > maxExpense.amount) {
-                        maxExpense = { amount: course.prices, activity: course.action };
-                    }
-                });
-
-                let maxCategory = { category: null, total: 0 };
-                for (const [category, total] of Object.entries(summary)) {
-                    if (total > maxCategory.total) {
-                        maxCategory = { category, total };
-                    }
-                }
-
-                let previousMonth;
-                if(selectedMonth==0){
-                    previousMonth = new Date(selectedYear-1, 11, 1);
-                }
-                else
-                {
-                    previousMonth = new Date(selectedYear, selectedMonth - 1, 1);
+    
+            const summary = courses.reduce((acc, course) => {
+                const category = course.action;
+                acc[category] = (acc[category] || 0) + course.prices;
+                return acc;
+            }, {});
+    
+            let maxExpense = { amount: 0, activity: null, time: null };
+            courses.forEach(course => {
+                if (course.prices > maxExpense.amount) {
+                    maxExpense = { 
+                        amount: course.prices, 
+                        activity: course.action,
+                        time: course.createdAt // Thêm thời gian tạo vào đây
+                    };
                 }
                 
-                const previousMonthEnd = new Date(selectedYear, selectedMonth, 0);
-                const previousMonthCourses = await Course.find({
-                    _id: { $in: user.courses },
-                    createdAt: { $gte: previousMonth, $lt: previousMonthEnd }
-                });
-                const previousMonthTotal = previousMonthCourses.reduce((acc, course) => acc + course.prices, 0);
-                const currentMonthTotal = courses.reduce((acc, course) => acc + course.prices, 0);
-                const difference = currentMonthTotal - previousMonthTotal;
+            });
+    
+            let maxCategory = { category: null, total: 0 };
+            for (const [category, total] of Object.entries(summary)) {
+                if (total > maxCategory.total) {
+                    maxCategory = { category, total };
+                }
+            }
+    
+            const currentMonthTotal = courses.reduce((acc, course) => acc + course.prices, 0);
+    
+            // Calculate for the previous month
+            const previousMonthStartDate = selectedMonth === 0 ? new Date(selectedYear - 1, 11, 1) : new Date(selectedYear, selectedMonth - 1, 1);
+            const previousMonthEndDate = new Date(selectedYear, selectedMonth, 0);
+    
+            const previousMonthCourses = await Course.find({
+                _id: { $in: user.courses },
+                createdAt: { $gte: previousMonthStartDate, $lt: previousMonthEndDate }
+            });
 
-                res.json({
+            let previousmaxExpense = { amount: 0, activity: null, time: null };
+
+            previousMonthCourses.forEach(course => {
+                if (course.prices > previousmaxExpense.amount) {
+                    previousmaxExpense = { 
+                        amount: course.prices, 
+                        activity: course.action,
+                        time: course.createdAt 
+                    };
+                }
+                
+            });
+    
+            const previousMonthSummary = previousMonthCourses.reduce((acc, course) => {
+                const category = course.action;
+                acc[category] = (acc[category] || 0) + course.prices;
+                return acc;
+            }, {});
+
+            let previousmaxCategory = { category: null, total: 0 };
+            for (const [category, total] of Object.entries(previousMonthSummary)) {
+                if (total > previousmaxCategory.total) {
+                    previousmaxCategory = { category, total };
+                }
+            }
+
+            
+            
+    
+            const previousMonthTotal = previousMonthCourses.reduce((acc, course) => acc + course.prices, 0);
+            const difference = currentMonthTotal - previousMonthTotal;
+    
+            res.json({
+                currentMonth: {
                     month: selectedMonth + 1,
                     year: selectedYear,
                     summary,
                     maxExpense,
                     maxCategory,
-                    difference
-                });
-            } catch (error) {
-                console.error('Error:', error);
-                res.status(500).send('Internal Server Error');
-            }
+                    total: currentMonthTotal
+                },
+                previousMonth: {
+                    month: selectedMonth === 0 ? 12 : selectedMonth,
+                    year: selectedMonth === 0 ? selectedYear - 1 : selectedYear,
+                    summary: previousMonthSummary,
+                    previousmaxExpense,
+                    previousmaxCategory,
+                    total: previousMonthTotal
+                },
+                difference
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            res.status(500).send('Internal Server Error');
         }
-
+    }
+    
     
 }
     
