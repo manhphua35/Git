@@ -1,7 +1,7 @@
 <div class="mt-4">
   <form name="container-form">
     <h3 class="text-center">Hoạt động đã lưu</h3>
-    <a href="/me/chart">Xem biểu đồ</a>
+    <a href="/me/chart">Xem biểu đồ chi tiêu năm 2024</a>
     <div class="mt-4 d-flex align-items-center">
     </div>
     <div class="mt-4">
@@ -26,10 +26,9 @@
         <option value="2024">2024</option>
       </select>
       <span id="total-amount-display"></span>
-       <button id="exportButton">Xuất ra file Excel</button>
+       <button id="exportButton" type="button" class="btn btn-primary">Xuất ra file Excel</button>
       <div class="content-container d-flex">
-       
-        <table class="table-actions">
+        <table class="table-actions" id ="table-actions">
           <tr class="title">
             <td></td>
             <td><b>Loại hoạt động</b></td>
@@ -52,7 +51,7 @@
     </div>
   </form>
 </div>
- <div id="paging" class="paging">
+<div id="paging" class="paging">
 </div>
 <div id="delete-course-modal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -73,7 +72,6 @@
     </div>
   </div>
 </div>
-
 <form name="delete-form" method="post"></form>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="/js/library/pagination.js"></script>

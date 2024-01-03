@@ -1,4 +1,4 @@
-const user = localStorage.getItem("username");
+const user = sessionStorage.getItem("username");
   if(user){
     window.location.href ="/home";
   }

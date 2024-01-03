@@ -298,6 +298,11 @@ h2 {
 .service_slic .slick-track {
   margin: 10px 0; }
 
+.footer {
+  height: 50px;
+  margin-top: 50px;
+  background-color: 0; }
+
 .table-actions {
   border: 1px solid #ccc;
   border-collapse: collapse; }
@@ -385,14 +390,4 @@ h2 {
 
 .table-month-actions .title {
   background: #f1f1f1;
-  text-align: center; }
-
-.paging ul {
-  list-style: none;
-  display: flex; }
-
-.paging .paginationjs-page, .paginationjs-ellipsis, .paginationjs-prev, .paginationjs-next {
-  width: 30px;
-  height: 30px;
-  border: 1px solid black;
   text-align: center; }

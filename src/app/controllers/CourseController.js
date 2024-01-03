@@ -230,7 +230,7 @@ class CourseController {
                     maxExpense = { 
                         amount: course.prices, 
                         activity: course.action,
-                        time: course.createdAt // Thêm thời gian tạo vào đây
+                        time: course.createdAt 
                     };
                 }
                 

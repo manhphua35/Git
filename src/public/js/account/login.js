@@ -1,4 +1,4 @@
-const user = localStorage.getItem("username");
+const user = sessionStorage.getItem("username");
   if(user){
     window.location.href ="/home";
   }
@@ -8,7 +8,7 @@ const user = localStorage.getItem("username");
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        localStorage.setItem('username', username);
+        sessionStorage.setItem('username', username);
 
         const formData = new URLSearchParams();
         formData.append('username', username);
@@ -26,7 +26,7 @@ const user = localStorage.getItem("username");
             if (data.success) {
               const userInfo = data.userInfo;
               const name = userInfo.name;
-              localStorage.setItem('name', name);
+              sessionStorage.setItem('name', name);
               window.location.href = '/home';
             } else {
                 const errorMessageElement = document.getElementById('error-message');

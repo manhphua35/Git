@@ -36,6 +36,7 @@ class AccountController {
                 res.status(200).json({ success: true, message: 'Đăng ký thành công'});
             }
         })}
+
     async loginto(req, res, next) {
         try {
             const { username, password } = req.body;
@@ -62,6 +63,7 @@ class AccountController {
             res.status(500).json('Có lỗi bên server');
         }
     }
+
     async logout(req, res) {
         try {
             res.clearCookie('userId');
@@ -71,27 +73,25 @@ class AccountController {
             res.status(500).json({ success: false, message: 'Có lỗi bên server' });
         }
     }
+
     changePasswordlayout(req, res) {
         res.render('account/change-password');
     }
+
     async changePassword(req, res) {
         try {
             const { currentPassword, newPassword, confirmNewPassword } = req.body;
             const userId = req.cookies.userId;
-            // Kiểm tra xem người dùng đã nhập đúng mật khẩu hiện tại chưa
             const account = await Account.findById({ _id: userId }); 
-            // Kiểm tra mật khẩu hiện tại
-           //console.log(req.body);
+         
             if (req.body.currentPassword != account.password) {
                 return res.status(400).json({ success: false, message: 'Mật khẩu hiện tại không chính xác.' });
             }
     
-            // Kiểm tra xem mật khẩu mới và xác nhận mật khẩu có trùng khớp không
             if (newPassword != confirmNewPassword) {
                 return res.status(400).json({ success: false, message: 'Mật khẩu mới và mật khẩu xác nhận không khớp.' });
             }
     
-            // Hash mật khẩu mới
             account.password = newPassword;
             await account.save();
     

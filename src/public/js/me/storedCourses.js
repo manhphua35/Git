@@ -30,13 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTable();
 
     document.getElementById('exportButton').addEventListener('click', function() {
-        const month = new Date().getMonth() + 1; // Lấy tháng hiện tại
-        const year = new Date().getFullYear(); // Lấy năm hiện tại
-    
-        // Đường dẫn đến endpoint export của bạn
+        const month = new Date().getMonth() + 1; 
+        const year = new Date().getFullYear(); 
         const exportApiPath = `/courses/exportActivitiesToExcel?month=${month}&year=${year}`;
-    
-        // Tạo liên kết tạm thời và kích hoạt tải xuống
         const a = document.createElement("a");
         a.href = exportApiPath;
         a.download = `HoatDong_Thang_${month}_${year}.xlsx`;
@@ -116,12 +112,25 @@ function createclick() {
 
 function renderGroupedCourses(groupedCourses) {
     const noActivityMessage = document.getElementById('no-activity-message');
+    const tableaction = document.getElementById('table-actions');
+    const statisticsContainer = document.getElementById('statistics-container');
+    const paging = document.getElementById('paging');
     tableBody.innerHTML = '';
     noActivityMessage.style.display = 'none';
     
     if (Object.keys(groupedCourses).length === 0) {
         noActivityMessage.style.display = 'block';
+        tableaction.style.display = 'none';
+        statisticsContainer.style.display ='none';
+        paging.style.display ='none';
     }
+    else {
+        noActivityMessage.style.display = 'none';
+        tableaction.style.display = ''; 
+        statisticsContainer.style.display = ''; 
+        paging.style.display = '';
+    }
+    
 
     for (const [date, courses] of Object.entries(groupedCourses)) {
         let totalAmount = 0;
@@ -256,6 +265,12 @@ function updateTable(currentPage) {
             totalPages = data.totalPages; 
             currentPage = data.currentPage;
             total = data.total;
+            if (totalPages > 1) {
+                createPagination(totalPages, currentPage);
+                document.getElementById('paging').style.display = ''; 
+            } else {
+                document.getElementById('paging').style.display = 'none'; 
+            }
             if (data.groupedCourses) {
                 renderGroupedCourses(data.groupedCourses);
                 totalAmountDisplay.textContent = `Tổng tiêu trong tháng: ${data.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
@@ -268,6 +283,54 @@ function updateTable(currentPage) {
         .catch(error => {
             console.error('Error:', error);
         });
+}
+
+
+function createPagination(totalPages, currentPage) {
+    const paginationContainer = document.getElementById('paging');
+    paginationContainer.innerHTML = '';
+    const ul = document.createElement('ul');
+    ul.className = 'pagination';
+
+    const prevLi = document.createElement('li');
+    prevLi.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
+    const prevLink = document.createElement('a');
+    prevLink.className = 'page-link';
+    prevLink.href = '#';
+    prevLink.setAttribute('aria-label', 'Previous');
+    prevLink.innerHTML = '<span aria-hidden="true">&laquo;</span><span class="sr-only">Previous</span>';
+    if (currentPage > 1) prevLink.onclick = (e) => { e.preventDefault(); changePage(currentPage - 1); };
+    prevLi.appendChild(prevLink);
+    ul.appendChild(prevLi);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = 'page-item ' + (i === currentPage ? 'active' : '');
+        const pageLink = document.createElement('a');
+        pageLink.className = 'page-link';
+        pageLink.href = '#';
+        pageLink.textContent = i;
+        pageLink.onclick = (e) => { e.preventDefault(); changePage(i); };
+        pageLi.appendChild(pageLink);
+        ul.appendChild(pageLi);
+    }
+
+    const nextLi = document.createElement('li');
+    nextLi.className = 'page-item ' + (currentPage === totalPages ? 'disabled' : '');
+    const nextLink = document.createElement('a');
+    nextLink.className = 'page-link';
+    nextLink.href = '#';
+    nextLink.setAttribute('aria-label', 'Next');
+    nextLink.innerHTML = '<span aria-hidden="true">&raquo;</span><span class="sr-only">Next</span>';
+    if (currentPage < totalPages) nextLink.onclick = (e) => { e.preventDefault(); changePage(currentPage + 1); };
+    nextLi.appendChild(nextLink);
+    ul.appendChild(nextLi);
+    paginationContainer.appendChild(ul);
+}
+
+function changePage(pageNumber) {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    updateTable(pageNumber);
 }
 
 
@@ -300,7 +363,7 @@ function handlePageChange(pageNumber) {
     });
 }
 
-initializePagination(20, 10);
+//initializePagination(20, 10);
 
 async function fetchMonthlyStatistics(month, year) {
     try {
@@ -319,8 +382,7 @@ async function fetchMonthlyStatistics(month, year) {
 function renderStatistics(data) {
     let statisticsHtml = "<h3>Thống Kê Chi Tiêu</h3>";
    
-    // Thống kê cho tháng hiện tại
-    statisticsHtml += `<h4>Tháng hiện tại (${data.currentMonth.month}/${data.currentMonth.year})</h4>`;
+    statisticsHtml += `<h4>Tháng(${data.currentMonth.month}/${data.currentMonth.year})</h4>`;
     for (const [category, total] of Object.entries(data.currentMonth.summary)) {
         statisticsHtml += `<p>${category}: ${total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
     }
@@ -328,24 +390,24 @@ function renderStatistics(data) {
     statisticsHtml += `<p>Lĩnh vực chi tiêu cao nhất: ${data.currentMonth.maxCategory.category} - ${data.currentMonth.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
 
     
-    // Thống kê cho tháng trước
     statisticsHtml += `<h4>Tháng trước (${data.previousMonth.month}/${data.previousMonth.year})</h4>`;
-    for (const [category, total] of Object.entries(data.previousMonth.summary)) {
-        statisticsHtml += `<p>${category}: ${total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
+
+   
+    const differenceFormatted = Math.abs(data.difference).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    
+    if(data.previousMonth.difference <0)
+    {
+        statisticsHtml += `<p>So sánh với tháng trước: ít hơn ${differenceFormatted}</p>`;
+    }
+    else
+    {
+        statisticsHtml += `<p>So sánh với tháng trước: nhiều hơn ${differenceFormatted}</p>`;
     }
 
-    //console.log(data.previousMonth.previousmaxCategory);
-    // So sánh với tháng trước
-    const differenceFormatted = data.difference.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-    const diffSign = data.difference < 0 ? "" : "+"; // Thêm dấu cộng cho số dương
-    statisticsHtml += `<p>So sánh với tháng trước: ${diffSign}${differenceFormatted}</p>`;
-
-    // Nút Xem chi tiết
-    statisticsHtml += `<button id="detailsButton" type="button">Xem chi tiết</button>`;
+    statisticsHtml += `<button id="detailsButton" type="button" class="btn btn-primary">Xem chi tiết</button>`;
 
     document.getElementById('statistics-container').innerHTML = statisticsHtml;
 
-    // Thêm sự kiện cho nút Xem chi tiết
     document.getElementById('detailsButton').addEventListener('click', function() {
         showDetailsModal(data);
     });
@@ -353,7 +415,6 @@ function renderStatistics(data) {
 
 function showDetailsModal(data) {
     let modalContentHtml = `<h4>Chi Tiết So Sánh Tháng ${data.currentMonth.month}/${data.currentMonth.year} và Tháng ${data.previousMonth.month}/${data.previousMonth.year}</h4>`;
-
     modalContentHtml += `
         <table class="table-month-actions">
             <thead>
@@ -396,7 +457,6 @@ function showDetailsModal(data) {
         </table>`;
 
     document.getElementById('modalDetailsContent').innerHTML = modalContentHtml;
-    // Hiển thị modal
     var modal = document.getElementById('detailsModal');
     modal.style.display = "block";
 
