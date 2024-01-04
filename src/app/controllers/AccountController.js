@@ -6,9 +6,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(cookieParser());
-
 class AccountController {
     register(req, res, next) {
         res.render('account/register');

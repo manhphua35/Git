@@ -1,5 +1,4 @@
 var monthSelector = document.getElementById('month-selector');
-var test = parseInt(monthSelector.value, 10);
 var yearSelector = document.getElementById('year-selector');
 var selectedYear = parseInt(yearSelector.value);
 var tableBody = document.getElementById('activity-table-body');
@@ -285,13 +284,11 @@ function updateTable(currentPage) {
         });
 }
 
-
 function createPagination(totalPages, currentPage) {
     const paginationContainer = document.getElementById('paging');
     paginationContainer.innerHTML = '';
     const ul = document.createElement('ul');
     ul.className = 'pagination';
-
     const prevLi = document.createElement('li');
     prevLi.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
     const prevLink = document.createElement('a');
@@ -334,36 +331,8 @@ function changePage(pageNumber) {
 }
 
 
-function initializePagination(totalItems, itemsPerPage) {
-    $('#paging').pagination({
-        dataSource: function(done) {
-            var totalPage = Math.ceil(totalItems / itemsPerPage);
-            var result = [];
-            for (var i = 1; i <= totalPage; i++) {
-                result.push(i); 
-            }
-            done(result);
-        },
-        pageSize: 1, 
-        afterPageOnClick: function(event, pageNumber) {  
-            updateTable(pageNumber).then(data => {
-                updatePagination(data.totalPages, pageNumber);
-            }).catch(error => {
-                console.error('Error updating table:', error);
-            });
-        }
-    });
-}
 
-function handlePageChange(pageNumber) {
-    updateTable(pageNumber).then(data => {
-        updatePagination(data.totalPages, pageNumber);
-    }).catch(error => {
-        console.error('Error:', error);
-    });
-}
 
-//initializePagination(20, 10);
 
 async function fetchMonthlyStatistics(month, year) {
     try {

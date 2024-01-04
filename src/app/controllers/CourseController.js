@@ -5,10 +5,8 @@ const {multipleMongooseToObject} =require('../../utils/mongoose');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
-
 const ExcelJS = require('exceljs');
 const path = require('path');
-
 const moment = require('moment-timezone');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -245,7 +243,6 @@ class CourseController {
     
             const currentMonthTotal = courses.reduce((acc, course) => acc + course.prices, 0);
     
-            // Calculate for the previous month
             const previousMonthStartDate = selectedMonth === 0 ? new Date(selectedYear - 1, 11, 1) : new Date(selectedYear, selectedMonth - 1, 1);
             const previousMonthEndDate = new Date(selectedYear, selectedMonth, 0);
     
@@ -313,7 +310,6 @@ class CourseController {
             const month = parseInt(req.query.month);
             const year = parseInt(req.query.year);
     
-            // Lấy dữ liệu từ cơ sở dữ liệu
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 0);
             const activities = await Course.find({
@@ -323,7 +319,6 @@ class CourseController {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet(`Hoạt Động Tháng ${month}-${year}`);
     
-            // Định nghĩa các cột
             worksheet.columns = [
                 { header: 'ID', key: 'id', width: 10 },
                 { header: 'Hoạt Động', key: 'activity', width: 30 },
@@ -332,7 +327,6 @@ class CourseController {
                 { header: 'Ngày Tạo', key: 'createdAt', width: 20 }
             ];
     
-            // Thêm dữ liệu vào worksheet
             activities.forEach(activity => {
                 worksheet.addRow({
                     id: activity._id.toString(),
@@ -345,7 +339,6 @@ class CourseController {
     
             worksheet.getColumn('amount').numFmt = '0.00$';
     
-            // Tạo và lưu file Excel
             const fileName = `HoatDong_Thang_${month}_${year}.xlsx`;
             const filePath = path.join(__dirname, fileName);
             await workbook.xlsx.writeFile(filePath);
