@@ -10,15 +10,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var courseId;
     var deleteForm = document.forms['delete-form'];
     var btnDeleteCourse = document.getElementById('btn-delete-course');
-    
-    $('#delete-course-modal').on('show.bs.modal', function (event) {
+    $('#delete-course-modal').parent().on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         courseId = button.data('id');
     });
+
     btnDeleteCourse.onclick = function() {
         deleteForm.action = '/courses/' + courseId + '?_method=DELETE';
         deleteForm.submit();
     };
+
     monthSelector.addEventListener('change', updateTable);
     yearSelector.addEventListener('change', updateTable);
 
@@ -129,7 +130,6 @@ function renderGroupedCourses(groupedCourses) {
         statisticsContainer.style.display = ''; 
         paging.style.display = '';
     }
-    
 
     for (const [date, courses] of Object.entries(groupedCourses)) {
         let totalAmount = 0;
@@ -264,7 +264,8 @@ function updateTable(currentPage) {
             totalPages = data.totalPages; 
             currentPage = data.currentPage;
             total = data.total;
-            if (totalPages > 1) {
+            console.log(totalPages);
+            if (totalPages > 0) {
                 createPagination(totalPages, currentPage);
                 document.getElementById('paging').style.display = ''; 
             } else {
@@ -332,8 +333,6 @@ function changePage(pageNumber) {
 
 
 
-
-
 async function fetchMonthlyStatistics(month, year) {
     try {
         const response = await fetch(`/courses/getmonthlyaction?month=${month}&year=${year}`);
@@ -357,11 +356,7 @@ function renderStatistics(data) {
     }
     statisticsHtml += `<p>Hoạt động chi tiêu cao nhất: ${data.currentMonth.maxExpense.activity} - ${data.currentMonth.maxExpense.amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} - ${formatDateTime(data.currentMonth.maxExpense.time)}</p>`;
     statisticsHtml += `<p>Lĩnh vực chi tiêu cao nhất: ${data.currentMonth.maxCategory.category} - ${data.currentMonth.maxCategory.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>`;
-
-    
     statisticsHtml += `<h4>Tháng trước (${data.previousMonth.month}/${data.previousMonth.year})</h4>`;
-
-   
     const differenceFormatted = Math.abs(data.difference).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
     
     if(data.previousMonth.difference <0)
